@@ -1,0 +1,14 @@
+[
+  { "topicId": "topic_1-1-1", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l1" },
+  { "topicId": "topic_1-1-2", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l2" },
+  { "topicId": "topic_1-1-3", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l3" },
+  { "topicId": "topic_1-2-1", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l1" },
+  { "topicId": "topic_1-2-2", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l2" },
+  { "topicId": "topic_1-2-3", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l3" },
+  { "topicId": "topic_1-1-1", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l1" },
+  { "topicId": "topic_1-1-2", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l1" },
+  { "topicId": "topic_1-1-3", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l2" },
+  { "topicId": "topic_1-2-1", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l1" },
+  { "topicId": "topic_1-2-2", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l2" },
+  { "topicId": "topic_1-2-3", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l3" }
+]
