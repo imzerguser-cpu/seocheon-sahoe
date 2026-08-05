@@ -1,0 +1,31 @@
+:root {
+  --color-bg: #fff7ec;
+  --color-primary: #ff9d5c;
+  --color-primary-dark: #e67e3d;
+  --color-accent: #6fcf97;
+  --color-text: #4a3b2a;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+button {
+  border-radius: var(--radius-md);
+  border: none;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #d9c9b8;
+  cursor: not-allowed;
+}
