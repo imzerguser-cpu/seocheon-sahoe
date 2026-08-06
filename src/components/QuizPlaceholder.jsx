@@ -1,6 +1,6 @@
 const SCOPE_LABELS = {
   lesson: '차시',
-  subunit: '소단원',
+  topic: '학습주제',
   unit: '대단원',
 }
 

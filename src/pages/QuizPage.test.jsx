@@ -14,8 +14,20 @@ function renderPage(path) {
 }
 
 describe('QuizPage', () => {
-  it('문항이 없으면 준비 중 안내를 보여준다', () => {
-    renderPage('/quiz/lesson/jihak-u1-s1-l1')
+  it('scope=lesson, 문항이 없으면 준비 중 안내와 0개를 보여준다', () => {
+    renderPage('/quiz/lesson/ecrimedia-u1-t5-l1')
     expect(screen.getByText('이 차시 퀴즈는 준비 중이에요.')).toBeInTheDocument()
+    expect(screen.getByText('현재 등록된 문항 수: 0개')).toBeInTheDocument()
+  })
+
+  it('scope=topic도 준비 중 안내를 보여준다', () => {
+    renderPage('/quiz/topic/ecrimedia-u1-t5')
+    expect(screen.getByText('이 학습주제 퀴즈는 준비 중이에요.')).toBeInTheDocument()
+  })
+
+  it('알 수 없는 scope는 안내 문구를 보여주고 QuizPlaceholder를 렌더링하지 않는다', () => {
+    renderPage('/quiz/garbage/x')
+    expect(screen.getByText('알 수 없는 퀴즈 범위예요.')).toBeInTheDocument()
+    expect(screen.queryByText(/퀴즈는 준비 중이에요/)).not.toBeInTheDocument()
   })
 })
