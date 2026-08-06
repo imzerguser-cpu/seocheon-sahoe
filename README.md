@@ -27,3 +27,14 @@ npm run dev
 4. `vite.config.js`의 `base` 값이 저장소 이름과 일치하는지 확인 (`/저장소이름/`)
 5. `master` 브랜치에 푸시하면 GitHub Actions가 자동으로 테스트 → 빌드 → 배포를 실행한다
 6. 배포된 사이트 주소: `https://<github-사용자명>.github.io/seocheon-sahoe/`
+
+## 이미지 자료 추가 방법
+
+이미지는 Firebase Storage가 아니라 저장소 내 `public/images/` 아래에 파일로 둔다.
+
+1. `public/images/<차시나 자료 단위별 하위 폴더>/` 아래에 이미지 파일을 추가한다.
+2. `src/data/topics.json`의 `resources` 배열에 사이트 루트 기준 경로로 등록한다:
+   ```json
+   { "type": "image", "title": "...", "src": "/images/<path>/<file>.jpg" }
+   ```
+3. 저장소 용량 관리를 위해 추가하기 전에 이미지를 웹용으로 압축·리사이즈한다 (예: 가로 최대 약 1600px).
