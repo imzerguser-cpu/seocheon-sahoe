@@ -1,36 +1,28 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../firebase.js'
+import adminConfig from '../data/adminConfig.json'
+import { matchAdminPassword, saveAdminSession } from '../lib/auth.js'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-      navigate('/admin')
-    } catch {
-      setError('로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요.')
+    if (!matchAdminPassword(adminConfig, password)) {
+      setError('비밀번호가 올바르지 않아요. 다시 확인해 주세요.')
+      return
     }
+    saveAdminSession()
+    navigate('/admin')
   }
 
   return (
     <main className="admin-login-page">
       <h1>관리자 로그인</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="admin-email">이메일</label>
-        <input
-          id="admin-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
         <label htmlFor="admin-password">비밀번호</label>
         <input
           id="admin-password"
