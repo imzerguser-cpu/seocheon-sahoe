@@ -1,14 +1,15 @@
 [
-  { "topicId": "topic_1-1-1", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l1" },
-  { "topicId": "topic_1-1-2", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l2" },
-  { "topicId": "topic_1-1-3", "publisherId": "jihak", "lessonId": "jihak-u1-s1-l3" },
-  { "topicId": "topic_1-2-1", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l1" },
-  { "topicId": "topic_1-2-2", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l2" },
-  { "topicId": "topic_1-2-3", "publisherId": "jihak", "lessonId": "jihak-u1-s2-l3" },
-  { "topicId": "topic_1-1-1", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l1" },
-  { "topicId": "topic_1-1-2", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l1" },
-  { "topicId": "topic_1-1-3", "publisherId": "chunjae", "lessonId": "chunjae-u1-s1-l2" },
-  { "topicId": "topic_1-2-1", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l1" },
-  { "topicId": "topic_1-2-2", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l2" },
-  { "topicId": "topic_1-2-3", "publisherId": "chunjae", "lessonId": "chunjae-u1-s2-l3" }
+  { "topicId": "topic_1-1-1", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t2-l1" },
+  { "topicId": "topic_1-1-1", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t2-l1" },
+  { "topicId": "topic_1-1-2", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t3-l1" },
+  { "topicId": "topic_1-1-2", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t3-l1" },
+  { "topicId": "topic_1-1-3", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t5-l1" },
+  { "topicId": "topic_1-1-3", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t5-l2" },
+  { "topicId": "topic_1-1-3", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t6-l1" },
+  { "topicId": "topic_1-2-1", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t8-l1" },
+  { "topicId": "topic_1-2-1", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t9-l1" },
+  { "topicId": "topic_1-2-2", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t10-l1" },
+  { "topicId": "topic_1-2-2", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t11-l1" },
+  { "topicId": "topic_1-2-3", "publisherId": "ecrimedia", "lessonId": "ecrimedia-u1-t12-l1" },
+  { "topicId": "topic_1-2-3", "publisherId": "chunjae-park", "lessonId": "chunjae-park-u1-t12-l1" }
 ]

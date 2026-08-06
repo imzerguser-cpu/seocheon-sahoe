@@ -1,0 +1,18 @@
+[
+  { "id": "jangang-cho", "name": "장항초", "publisherId": "ecrimedia", "password": "0101" },
+  { "id": "jangang-jungang-cho", "name": "장항중앙초", "publisherId": "chunjae-park", "password": "0202" },
+  { "id": "songlim-cho", "name": "송림초", "publisherId": "ecrimedia", "password": "0303" },
+  { "id": "seocheon-cho", "name": "서천초", "publisherId": "visang", "password": "0404" },
+  { "id": "madong-cho", "name": "마동초", "publisherId": "chunjae-park", "password": "0505" },
+  { "id": "songseok-cho", "name": "송석초", "publisherId": "mirae", "password": "0606" },
+  { "id": "hwayang-cho", "name": "화양초", "publisherId": "chunjae-park", "password": "0707" },
+  { "id": "gisan-cho", "name": "기산초", "publisherId": "ecrimedia", "password": "0808" },
+  { "id": "hansan-cho", "name": "한산초", "publisherId": "chunjae-kim", "password": "0909" },
+  { "id": "masan-cho", "name": "마산초", "publisherId": "ecrimedia", "password": "1010" },
+  { "id": "sicho-cho", "name": "시초초", "publisherId": "visang", "password": "1111" },
+  { "id": "oseong-cho", "name": "오성초", "publisherId": "visang", "password": "1212" },
+  { "id": "bunae-cho", "name": "부내초", "publisherId": "visang", "password": "1313" },
+  { "id": "biin-cho", "name": "비인초", "publisherId": "chunjae-kim", "password": "1414" },
+  { "id": "seomyeon-cho", "name": "서면초", "publisherId": "ecrimedia", "password": "1515" },
+  { "id": "seodo-cho", "name": "서도초", "publisherId": "ecrimedia", "password": "1616" }
+]

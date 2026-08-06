@@ -13,27 +13,27 @@ export function selectUnit(curriculum, unitId) {
   return selectUnits(curriculum).find((u) => u.id === unitId) ?? null
 }
 
-export function selectSubunits(curriculum, unitId) {
+export function selectTopics(curriculum, unitId) {
   const unit = selectUnit(curriculum, unitId)
   if (!unit) return []
-  return [...unit.subunits].sort((a, b) => a.order - b.order)
+  return [...unit.topics].sort((a, b) => a.order - b.order)
 }
 
-export function selectSubunit(curriculum, unitId, subunitId) {
-  return selectSubunits(curriculum, unitId).find((s) => s.id === subunitId) ?? null
+export function selectTopic(curriculum, unitId, topicId) {
+  return selectTopics(curriculum, unitId).find((t) => t.id === topicId) ?? null
 }
 
-export function selectLessons(curriculum, unitId, subunitId) {
-  const subunit = selectSubunit(curriculum, unitId, subunitId)
-  if (!subunit) return []
-  return [...subunit.lessons].sort((a, b) => a.order - b.order)
+export function selectLessons(curriculum, unitId, topicId) {
+  const topic = selectTopic(curriculum, unitId, topicId)
+  if (!topic) return []
+  return [...topic.lessons].sort((a, b) => a.차시순서 - b.차시순서)
 }
 
-export function selectLesson(curriculum, unitId, subunitId, lessonId) {
-  return selectLessons(curriculum, unitId, subunitId).find((l) => l.id === lessonId) ?? null
+export function selectLesson(curriculum, unitId, topicId, lessonId) {
+  return selectLessons(curriculum, unitId, topicId).find((l) => l.id === lessonId) ?? null
 }
 
-export function selectTopicsForLesson(topicList, mappingList, publisherId, lessonId) {
+export function selectSeocheonTopicsForLesson(topicList, mappingList, publisherId, lessonId) {
   const topicIds = mappingList
     .filter((m) => m.publisherId === publisherId && m.lessonId === lessonId)
     .map((m) => m.topicId)
@@ -45,9 +45,9 @@ export function selectQuizQuestions(quizList, scope, refId) {
     const quiz = quizList.find((q) => q.scope === 'lesson' && q.refId === refId)
     return quiz ? quiz.questions : []
   }
-  if (scope === 'subunit') {
+  if (scope === 'topic') {
     return quizList
-      .filter((q) => q.scope === 'lesson' && q.parentSubunitId === refId)
+      .filter((q) => q.scope === 'lesson' && q.parentTopicId === refId)
       .flatMap((q) => q.questions)
   }
   if (scope === 'unit') {
@@ -70,24 +70,24 @@ export function getUnit(publisherId, unitId) {
   return selectUnit(curricula[publisherId], unitId)
 }
 
-export function getSubunits(publisherId, unitId) {
-  return selectSubunits(curricula[publisherId], unitId)
+export function getTopics(publisherId, unitId) {
+  return selectTopics(curricula[publisherId], unitId)
 }
 
-export function getSubunit(publisherId, unitId, subunitId) {
-  return selectSubunit(curricula[publisherId], unitId, subunitId)
+export function getTopic(publisherId, unitId, topicId) {
+  return selectTopic(curricula[publisherId], unitId, topicId)
 }
 
-export function getLessons(publisherId, unitId, subunitId) {
-  return selectLessons(curricula[publisherId], unitId, subunitId)
+export function getLessons(publisherId, unitId, topicId) {
+  return selectLessons(curricula[publisherId], unitId, topicId)
 }
 
-export function getLesson(publisherId, unitId, subunitId, lessonId) {
-  return selectLesson(curricula[publisherId], unitId, subunitId, lessonId)
+export function getLesson(publisherId, unitId, topicId, lessonId) {
+  return selectLesson(curricula[publisherId], unitId, topicId, lessonId)
 }
 
-export function getTopicsForLesson(publisherId, lessonId) {
-  return selectTopicsForLesson(topicsData, mappingsData, publisherId, lessonId)
+export function getSeocheonTopicsForLesson(publisherId, lessonId) {
+  return selectSeocheonTopicsForLesson(topicsData, mappingsData, publisherId, lessonId)
 }
 
 export function getQuizQuestions(scope, refId) {
