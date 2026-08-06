@@ -10,6 +10,7 @@ import UnitListPage from './pages/UnitListPage.jsx'
 import SubunitListPage from './pages/SubunitListPage.jsx'
 import LessonListPage from './pages/LessonListPage.jsx'
 import LessonDetailPage from './pages/LessonDetailPage.jsx'
+import QuizPage from './pages/QuizPage.jsx'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             path="/p/:publisherId/:unitId/:subunitId/:lessonId"
             element={<LessonDetailPage />}
           />
+          <Route path="/quiz/:scope/:refId" element={<QuizPage />} />
         </Route>
 
         <Route element={<AdminRoute />}>
