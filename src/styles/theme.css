@@ -91,6 +91,18 @@ button:disabled {
 /* 대단원 아코디언 */
 .unit-accordion {
   display: grid;
+  gap: 24px;
+}
+
+.semester-heading {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.unit-accordion-list {
+  display: grid;
   gap: 12px;
 }
 
@@ -138,6 +150,10 @@ button:disabled {
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.topic-link-title {
+  font-weight: 600;
 }
 
 /* 차시 상세 페이지 */
