@@ -1,49 +1,88 @@
-import { useParams, Link } from 'react-router-dom'
-import { getUnit, getSubunit, getLesson, getPublishers, getTopicsForLesson } from '../lib/dataLoader.js'
-import UnitBreadcrumb from '../components/UnitBreadcrumb.jsx'
+import { useParams, Link, Navigate } from 'react-router-dom'
+import {
+  getUnit,
+  getTopic,
+  getLessons,
+  getLesson,
+  getSeocheonTopicsForLesson,
+} from '../lib/dataLoader.js'
 import ResourceCard from '../components/ResourceCard.jsx'
 
 export default function LessonDetailPage() {
-  const { publisherId, unitId, subunitId, lessonId } = useParams()
-  const publisher = getPublishers().find((p) => p.id === publisherId)
+  const { publisherId, unitId, topicId, lessonId } = useParams()
   const unit = getUnit(publisherId, unitId)
-  const subunit = getSubunit(publisherId, unitId, subunitId)
-  const lesson = getLesson(publisherId, unitId, subunitId, lessonId)
-  const topics = getTopicsForLesson(publisherId, lessonId)
+  const topic = getTopic(publisherId, unitId, topicId)
+  const lessons = getLessons(publisherId, unitId, topicId)
+  const lesson = getLesson(publisherId, unitId, topicId, lessonId)
+  const seocheonTopics = getSeocheonTopicsForLesson(publisherId, lessonId)
+
+  if (!lesson) {
+    return <Navigate to={`/p/${publisherId}`} replace />
+  }
+
+  const currentIndex = lessons.findIndex((l) => l.id === lessonId)
+  const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null
+  const nextLesson = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null
+  const lessonPath = (target) => `/p/${publisherId}/${unitId}/${topicId}/${target.id}`
 
   return (
-    <main>
-      <UnitBreadcrumb
-        trail={[
-          { href: `/p/${publisherId}`, label: publisher ? publisher.name : publisherId },
-          { href: `/p/${publisherId}/${unitId}`, label: unit ? unit.title : unitId },
-          { href: `/p/${publisherId}/${unitId}/${subunitId}`, label: subunit ? subunit.title : subunitId },
-        ]}
-        current={lesson ? lesson.title : lessonId}
-      />
-      <h1>{lesson ? lesson.title : lessonId}</h1>
+    <main className="lesson-detail-page">
+      <Link to={`/p/${publisherId}`} className="back-link">
+        ← 대단원 목록으로
+      </Link>
+      <p className="unit-label">{unit ? unit.title : unitId}</p>
+      <h1 className="topic-title">{topic ? topic.title : topicId}</h1>
+      <p className="lesson-meta">
+        {lesson.차시순서} / {lesson.전체차시}차시 · {lesson.쪽수}쪽
+      </p>
+      {lesson.성취기준.length > 0 && (
+        <ul className="standards-list">
+          {lesson.성취기준.map((standard) => (
+            <li key={standard}>{standard}</li>
+          ))}
+        </ul>
+      )}
 
-      {topics.length === 0 && <p className="empty-state">아직 연결된 서천 지역화 자료가 없어요.</p>}
+      <nav className="lesson-nav">
+        {prevLesson && (
+          <Link to={lessonPath(prevLesson)}>◀ 이전 차시</Link>
+        )}
+        {nextLesson && (
+          <Link to={lessonPath(nextLesson)}>다음 차시 ▶</Link>
+        )}
+      </nav>
 
-      {topics.map((topic) => (
-        <section key={topic.id} className="topic-block">
-          <h2>{topic.차시제목}</h2>
-          <p className="topic-usage">{topic.활용법 || '활용 방법을 준비 중입니다.'}</p>
-          {topic.resources.length === 0 ? (
+      {seocheonTopics.length === 0 && (
+        <p className="empty-state">아직 연결된 서천 지역화 자료가 없어요.</p>
+      )}
+
+      {seocheonTopics.map((seocheonTopic) => (
+        <section key={seocheonTopic.id} className="topic-block">
+          <h2>{seocheonTopic.차시제목}</h2>
+          <p className="topic-usage">{seocheonTopic.활용법 || '활용 방법을 준비 중입니다.'}</p>
+          {seocheonTopic.resources.length === 0 ? (
             <p className="empty-state">자료 준비 중입니다.</p>
           ) : (
             <div className="resource-list">
-              {topic.resources.map((resource, index) => (
-                <ResourceCard key={`${topic.id}-${index}`} resource={resource} />
+              {seocheonTopic.resources.map((resource, index) => (
+                <ResourceCard key={`${seocheonTopic.id}-${index}`} resource={resource} />
               ))}
             </div>
           )}
         </section>
       ))}
 
-      <Link to={`/quiz/lesson/${lessonId}`} className="quiz-link">
-        이 차시 퀴즈 풀기
-      </Link>
+      <div className="quiz-links">
+        <Link to={`/quiz/lesson/${lessonId}`} className="quiz-link">
+          이 차시 퀴즈
+        </Link>
+        <Link to={`/quiz/topic/${topicId}`} className="quiz-link">
+          이 학습주제 퀴즈
+        </Link>
+        <Link to={`/quiz/unit/${unitId}`} className="quiz-link">
+          이 대단원 퀴즈
+        </Link>
+      </div>
     </main>
   )
 }
