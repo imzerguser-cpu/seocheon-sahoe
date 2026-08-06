@@ -20,4 +20,12 @@ describe('LessonListPage', () => {
     expect(screen.getByText('장소에 대한 느낌 나누기')).toBeInTheDocument()
     expect(screen.getByText('경험과 느낌 표현하기')).toBeInTheDocument()
   })
+
+  it('소단원 퀴즈 풀기 링크를 보여준다', () => {
+    renderWithRoute('jihak', 'jihak-u1', 'jihak-u1-s1')
+    expect(screen.getByText('이 소단원 퀴즈 풀기')).toHaveAttribute(
+      'href',
+      '/quiz/subunit/jihak-u1-s1',
+    )
+  })
 })

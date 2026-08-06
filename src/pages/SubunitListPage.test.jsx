@@ -19,4 +19,12 @@ describe('SubunitListPage', () => {
     expect(screen.getByText('(1) 우리 주변의 장소')).toBeInTheDocument()
     expect(screen.getByText('(2) 살기 좋은 우리 지역')).toBeInTheDocument()
   })
+
+  it('대단원 퀴즈 풀기 링크를 보여준다', () => {
+    renderWithRoute('jihak', 'jihak-u1')
+    expect(screen.getByText('이 대단원 퀴즈 풀기')).toHaveAttribute(
+      'href',
+      '/quiz/unit/jihak-u1',
+    )
+  })
 })

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getSubunits, getUnit, getPublishers } from '../lib/dataLoader.js'
 import EntityCardList from '../components/EntityCardList.jsx'
 import UnitBreadcrumb from '../components/UnitBreadcrumb.jsx'
@@ -21,6 +21,9 @@ export default function SubunitListPage() {
         getHref={(subunit) => `/p/${publisherId}/${unitId}/${subunit.id}`}
         emptyMessage="아직 등록된 소단원이 없어요."
       />
+      <Link to={`/quiz/unit/${unitId}`} className="quiz-link">
+        이 대단원 퀴즈 풀기
+      </Link>
     </main>
   )
 }
