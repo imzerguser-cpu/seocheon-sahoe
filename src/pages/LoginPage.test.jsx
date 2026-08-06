@@ -59,4 +59,12 @@ describe('LoginPage', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('비밀번호가 올바르지 않아요')
     expect(getSession()).toBeNull()
   })
+
+  it('관리자 로그인 화면으로 가는 링크를 보여준다', () => {
+    renderLoginPage()
+    expect(screen.getByRole('link', { name: '관리자 모드' })).toHaveAttribute(
+      'href',
+      '/admin/login',
+    )
+  })
 })

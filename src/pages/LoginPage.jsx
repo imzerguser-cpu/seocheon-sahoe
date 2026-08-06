@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import schools from '../data/schools.json'
 import { matchSchool } from '../lib/auth.js'
@@ -63,6 +63,9 @@ export default function LoginPage() {
         <button type="submit">입장하기</button>
         {error && <p role="alert">{error}</p>}
       </form>
+      <Link to="/admin/login" className="admin-entry-link">
+        관리자 모드
+      </Link>
     </main>
   )
 }

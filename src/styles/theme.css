@@ -65,6 +65,14 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.admin-entry-link {
+  display: inline-block;
+  margin-top: 24px;
+  color: #a08b73;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
 .login-page select,
 .login-page input,
 .admin-login-page input {
