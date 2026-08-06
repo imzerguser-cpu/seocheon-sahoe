@@ -74,3 +74,36 @@ button:disabled {
   background: var(--color-accent);
   margin-bottom: 16px;
 }
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--color-primary-dark);
+  margin-bottom: 16px;
+}
+
+.breadcrumb-sep {
+  margin: 0 6px;
+}
+
+.entity-card-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.entity-card {
+  display: block;
+  background: white;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.empty-state {
+  color: #a08b73;
+  font-style: italic;
+}
