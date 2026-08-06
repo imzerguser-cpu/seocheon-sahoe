@@ -7,6 +7,14 @@ npm install
 npm run dev
 ```
 
+## 테스트 실행
+
+```bash
+npm test
+```
+
+CI(GitHub Actions)가 배포 전에 이 명령으로 테스트를 실행하므로, 통과하지 않으면 배포되지 않는다.
+
 ## 학교/관리자 비밀번호 관리
 
 - 학교별 비밀번호: `src/data/schools.json`의 각 학교 항목에서 `password` 값을 직접 수정한다.
@@ -36,6 +44,9 @@ npm run dev
      ]
    }
    ```
+   - `semester`(학기)는 1 또는 2이며, 해당 대단원이 1학기/2학기 중 어디에 속하는지 나타낸다. 화면에서 대단원 목록을 학기별로 묶어 보여주는 데 쓰인다.
+   - `note`는 출판사 커리큘럼 전체에 대한 안내 문구(예: 실제 교과서와 다를 수 있다는 안내)로, 화면에는 노출되지 않는 참고용 메모다.
+   - `차시순서`/`전체차시`는 **그 학습주제(topic) 안에서의 순서**다. 대단원 전체 차시 기준이 아니다. 예를 들어 한 학습주제에 차시가 2개 있으면 각 차시의 `차시순서`/`전체차시`는 1/2, 2/2가 되고, 그 값은 다른 학습주제로 넘어가면 다시 1부터 시작한다.
 2. `src/data/curriculaIndex.js`에 새 파일을 import하고 `curricula` 객체에 `publisherId` 키로 추가한다.
 3. `src/data/publishers.json`에 `{ "id": "newpub", "name": "화면에 보일 출판사 이름" }`을 추가한다.
 4. 그 출판사를 쓰는 학교가 있다면 `src/data/schools.json`에 해당 학교의 `publisherId`를 이 값으로 설정한다.
@@ -47,7 +58,7 @@ npm run dev
 
 ## 이미지 자료 추가 방법
 
-이미지는 Firebase Storage가 아니라 저장소 내 `public/images/` 아래에 파일로 둔다.
+이미지는 저장소 내 `public/images/` 아래에 파일로 둔다.
 
 1. `public/images/<차시나 자료 단위별 하위 폴더>/` 아래에 이미지 파일을 추가한다.
 2. `src/data/topics.json`의 `resources` 배열에 사이트 루트 기준 경로로 등록한다:
