@@ -25,5 +25,5 @@ npm run dev
 2. 저장소 Settings → Pages → Build and deployment → Source를 "GitHub Actions"로 설정
 3. 저장소 Settings → Secrets and variables → Actions에 `.env.example`과 동일한 이름으로 Firebase 설정값 6개를 Repository secret으로 등록
 4. `vite.config.js`의 `base` 값이 저장소 이름과 일치하는지 확인 (`/저장소이름/`)
-5. `main` 브랜치에 푸시하면 GitHub Actions가 자동으로 테스트 → 빌드 → 배포를 실행한다
+5. `master` 브랜치에 푸시하면 GitHub Actions가 자동으로 테스트 → 빌드 → 배포를 실행한다
 6. 배포된 사이트 주소: `https://<github-사용자명>.github.io/seocheon-sahoe/`
