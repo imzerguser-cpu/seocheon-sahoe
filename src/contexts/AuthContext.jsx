@@ -6,8 +6,8 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => getSession())
 
-  const login = useCallback((role) => {
-    saveSession(role)
+  const login = useCallback((schoolSession) => {
+    saveSession(schoolSession)
     setSession(getSession())
   }, [])
 
