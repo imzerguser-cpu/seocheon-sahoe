@@ -7,7 +7,7 @@ describe('UnitAccordion', () => {
   it('대단원 목록을 보여주고, 클릭 전에는 학습주제가 보이지 않는다', () => {
     render(
       <MemoryRouter>
-        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1 }]} />
+        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
       </MemoryRouter>,
     )
     expect(screen.getByText('1. 우리가 사는 곳')).toBeInTheDocument()
@@ -17,7 +17,7 @@ describe('UnitAccordion', () => {
   it('대단원을 클릭하면 학습주제 목록이 차시 수 뱃지와 함께 펼쳐지고, 첫 차시로 링크된다', () => {
     render(
       <MemoryRouter>
-        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1 }]} />
+        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
       </MemoryRouter>,
     )
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
@@ -32,7 +32,7 @@ describe('UnitAccordion', () => {
   it('다시 클릭하면 학습주제 목록이 접힌다', () => {
     render(
       <MemoryRouter>
-        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1 }]} />
+        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
       </MemoryRouter>,
     )
     const header = screen.getByText('1. 우리가 사는 곳')
@@ -48,5 +48,21 @@ describe('UnitAccordion', () => {
       </MemoryRouter>,
     )
     expect(screen.getByText('아직 등록된 대단원이 없어요.')).toBeInTheDocument()
+  })
+
+  it('학기별로 대단원을 묶어서 1학기/2학기 소제목을 보여준다', () => {
+    render(
+      <MemoryRouter>
+        <UnitAccordion
+          publisherId="ecrimedia"
+          units={[
+            { id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 },
+            { id: 'ecrimedia-u3', title: '3. 시대마다 다른 삶의 모습', order: 3, semester: 2 },
+          ]}
+        />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('1학기')).toBeInTheDocument()
+    expect(screen.getByText('2학기')).toBeInTheDocument()
   })
 })
