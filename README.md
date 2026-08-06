@@ -1,32 +1,49 @@
 # 서천 지역화 자료 사이트
 
-## Firebase 프로젝트 설정 (최초 1회)
-
-1. https://console.firebase.google.com 에서 새 프로젝트 생성
-2. Authentication → 로그인 방법 → "이메일/비밀번호" 사용 설정, 관리자 계정 1개 수동 생성
-3. Firestore Database 생성 (프로덕션 모드)
-4. Firestore에 `config` 컬렉션 → `access` 문서 생성, 아래 필드 추가:
-   - `teacherPasscode` (string): 교사용 비밀번호
-   - `studentPasscode` (string): 학생용 비밀번호
-5. 프로젝트 설정 → 웹 앱 추가 → 표시된 설정값을 `.env.local`에 복사 (`.env.example` 참고)
-6. 교사/학생 비밀번호를 바꾸려면 Firestore 콘솔에서 `config/access` 문서를 직접 수정한다. 관리자 계정 비밀번호를 바꾸려면 Authentication 콘솔에서 직접 재설정한다. (사이트 내 변경 UI 없음)
-
 ## 개발 환경 실행
 
 ```bash
 npm install
-cp .env.example .env.local   # 값 채우기
 npm run dev
 ```
 
-## GitHub Pages 배포
+## 학교/관리자 비밀번호 관리
 
-1. GitHub에 새 저장소 생성 (예: `seocheon-sahoe`)
-2. 저장소 Settings → Pages → Build and deployment → Source를 "GitHub Actions"로 설정
-3. 저장소 Settings → Secrets and variables → Actions에 `.env.example`과 동일한 이름으로 Firebase 설정값 6개를 Repository secret으로 등록
-4. `vite.config.js`의 `base` 값이 저장소 이름과 일치하는지 확인 (`/저장소이름/`)
-5. `master` 브랜치에 푸시하면 GitHub Actions가 자동으로 테스트 → 빌드 → 배포를 실행한다
-6. 배포된 사이트 주소: `https://<github-사용자명>.github.io/seocheon-sahoe/`
+- 학교별 비밀번호: `src/data/schools.json`의 각 학교 항목에서 `password` 값을 직접 수정한다.
+- 관리자 비밀번호: `src/data/adminConfig.json`의 `password` 값을 직접 수정한다.
+- 파일을 수정한 뒤 커밋·배포하면 바로 반영된다. 사이트 내에는 비밀번호 변경 UI가 없다.
+
+## 새 출판사 커리큘럼 추가하는 법
+
+1. `src/data/curricula/<publisherId>.json`을 새로 만든다. 스키마는 다음과 같다:
+   ```json
+   {
+     "publisherId": "예: newpub",
+     "publisherName": "화면에 보일 출판사 이름",
+     "note": "실제 교과서와 다를 수 있다는 안내 등",
+     "units": [
+       {
+         "id": "newpub-u1", "title": "1. 우리가 사는 곳", "order": 1, "semester": 1,
+         "topics": [
+           {
+             "id": "newpub-u1-t1", "title": "학습주제 제목", "order": 1,
+             "lessons": [
+               { "id": "newpub-u1-t1-l1", "차시순서": 1, "전체차시": 1, "쪽수": "8~11", "성취기준": [] }
+             ]
+           }
+         ]
+       }
+     ]
+   }
+   ```
+2. `src/data/curriculaIndex.js`에 새 파일을 import하고 `curricula` 객체에 `publisherId` 키로 추가한다.
+3. `src/data/publishers.json`에 `{ "id": "newpub", "name": "화면에 보일 출판사 이름" }`을 추가한다.
+4. 그 출판사를 쓰는 학교가 있다면 `src/data/schools.json`에 해당 학교의 `publisherId`를 이 값으로 설정한다.
+
+## 서천 지역화 자료(자료 매핑) 추가하는 법
+
+1. `src/data/topics.json`에 자료 항목을 추가한다(대단원/소단원/차시제목/활용법/resources).
+2. `src/data/mappings.json`에 `{ "topicId": "...", "publisherId": "...", "lessonId": "..." }`를 추가해 원하는 출판사의 실제 차시 id와 연결한다. 차시 id는 `src/data/curricula/<publisherId>.json`에서 확인한다.
 
 ## 이미지 자료 추가 방법
 
@@ -38,3 +55,11 @@ npm run dev
    { "type": "image", "title": "...", "src": "/images/<path>/<file>.jpg" }
    ```
 3. 저장소 용량 관리를 위해 추가하기 전에 이미지를 웹용으로 압축·리사이즈한다 (예: 가로 최대 약 1600px).
+
+## GitHub Pages 배포
+
+1. GitHub에 새 저장소 생성 (예: `seocheon-sahoe`)
+2. 저장소 Settings → Pages → Build and deployment → Source를 "GitHub Actions"로 설정
+3. `vite.config.js`의 `base` 값이 저장소 이름과 일치하는지 확인 (`/저장소이름/`)
+4. `master` 브랜치에 푸시하면 GitHub Actions가 자동으로 테스트 → 빌드 → 배포를 실행한다
+5. 배포된 사이트 주소: `https://<github-사용자명>.github.io/seocheon-sahoe/`
