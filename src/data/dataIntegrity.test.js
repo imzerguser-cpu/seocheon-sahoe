@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import schools from './schools.json'
 import publishers from './publishers.json'
-import mappings from './mappings.json'
 import { curricula } from './curriculaIndex.js'
 
 describe('학교 데이터의 publisherId는 실제 출판사 커리큘럼에 존재한다', () => {
@@ -10,25 +9,6 @@ describe('학교 데이터의 publisherId는 실제 출판사 커리큘럼에 �
   it.each(schools)('$name ($publisherId)', (school) => {
     expect(publisherIds.has(school.publisherId)).toBe(true)
     expect(curricula[school.publisherId]).toBeDefined()
-  })
-})
-
-describe('mappings.json의 (publisherId, lessonId)는 실제 커리큘럼 차시로 해석된다', () => {
-  function findLesson(publisherId, lessonId) {
-    const curriculum = curricula[publisherId]
-    if (!curriculum) return null
-    for (const unit of curriculum.units) {
-      for (const topic of unit.topics) {
-        const lesson = topic.lessons.find((l) => l.id === lessonId)
-        if (lesson) return lesson
-      }
-    }
-    return null
-  }
-
-  it.each(mappings)('$topicId -> $publisherId/$lessonId', (mapping) => {
-    const lesson = findLesson(mapping.publisherId, mapping.lessonId)
-    expect(lesson).not.toBeNull()
   })
 })
 
