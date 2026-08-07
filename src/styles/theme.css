@@ -410,6 +410,19 @@ button:disabled {
   border: 1px solid #f0e3d0;
 }
 
+.resource-card img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.resource-card .video-embed {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
 .quiz-links {
   display: flex;
   flex-wrap: wrap;

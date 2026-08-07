@@ -29,6 +29,43 @@ describe('ResourceCard', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
+  it('유튜브 watch 링크는 사이트 안에서 바로 재생되는 영상으로 임베드된다', () => {
+    render(
+      <ResourceCard
+        resource={{
+          type: 'video',
+          title: '유튜브 영상',
+          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        }}
+      />,
+    )
+    const iframe = screen.getByTitle('유튜브 영상')
+    expect(iframe.tagName).toBe('IFRAME')
+    expect(iframe).toHaveAttribute('src', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
+  })
+
+  it('유튜브 youtu.be 단축 링크도 임베드된다', () => {
+    render(
+      <ResourceCard
+        resource={{ type: 'video', title: '짧은 링크', url: 'https://youtu.be/dQw4w9WgXcQ' }}
+      />,
+    )
+    expect(screen.getByTitle('짧은 링크')).toHaveAttribute(
+      'src',
+      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    )
+  })
+
+  it('유튜브가 아닌 영상 링크는 임베드하지 않고 기존처럼 링크만 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{ type: 'video', title: '다른 영상', url: 'https://example.com/clip.mp4' }}
+      />,
+    )
+    expect(screen.queryByRole('iframe')).not.toBeInTheDocument()
+    expect(screen.getByText('자료 열기')).toHaveAttribute('href', 'https://example.com/clip.mp4')
+  })
+
   it('파일(PDF/HWP) 자료는 QR·이미지 없이 "자료 열기" 링크만 보여준다', () => {
     render(
       <ResourceCard
