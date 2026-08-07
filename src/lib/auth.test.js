@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import {
   saveSession,
   getSession,
@@ -8,7 +9,15 @@ import {
   clearAdminSession,
   matchSchool,
   matchAdminPassword,
+  signInSuperAdmin,
+  signOutSuperAdmin,
 } from './auth.js'
+
+vi.mock('../firebase.js', () => ({ auth: {} }))
+vi.mock('firebase/auth', () => ({
+  signInWithEmailAndPassword: vi.fn(),
+  signOut: vi.fn(),
+}))
 
 beforeEach(() => {
   localStorage.clear()
@@ -47,19 +56,29 @@ describe('school session storage', () => {
 })
 
 describe('admin session storage', () => {
-  it('관리자 세션이 없으면 false를 반환한다', () => {
-    expect(getAdminSession()).toBe(false)
+  it('세션이 없으면 null을 반환한다', () => {
+    expect(getAdminSession()).toBeNull()
   })
 
-  it('관리자 세션을 저장하고 확인할 수 있다', () => {
-    saveAdminSession()
-    expect(getAdminSession()).toBe(true)
+  it('학교관리자 세션을 저장하고 확인할 수 있다', () => {
+    saveAdminSession('school-admin')
+    expect(getAdminSession()).toBe('school-admin')
+  })
+
+  it('전체관리자 세션을 저장하고 확인할 수 있다', () => {
+    saveAdminSession('super-admin')
+    expect(getAdminSession()).toBe('super-admin')
+  })
+
+  it('알 수 없는 값이 저장되어 있으면 null을 반환한다', () => {
+    localStorage.setItem('seocheon-sahoe:admin-session', 'garbage')
+    expect(getAdminSession()).toBeNull()
   })
 
   it('관리자 세션을 지울 수 있다', () => {
-    saveAdminSession()
+    saveAdminSession('school-admin')
     clearAdminSession()
-    expect(getAdminSession()).toBe(false)
+    expect(getAdminSession()).toBeNull()
   })
 })
 
@@ -99,5 +118,28 @@ describe('matchAdminPassword', () => {
 
   it('config가 없으면 false를 반환한다', () => {
     expect(matchAdminPassword(null, '20262026')).toBe(false)
+  })
+})
+
+describe('signInSuperAdmin', () => {
+  it('로그인에 성공하면 true를 반환한다', async () => {
+    signInWithEmailAndPassword.mockResolvedValue({ user: { uid: 'abc' } })
+    const result = await signInSuperAdmin('admin@example.com', 'pw123456')
+    expect(result).toBe(true)
+    expect(signInWithEmailAndPassword).toHaveBeenCalledWith({}, 'admin@example.com', 'pw123456')
+  })
+
+  it('로그인에 실패하면 false를 반환한다', async () => {
+    signInWithEmailAndPassword.mockRejectedValue(new Error('auth/wrong-password'))
+    const result = await signInSuperAdmin('admin@example.com', 'wrong')
+    expect(result).toBe(false)
+  })
+})
+
+describe('signOutSuperAdmin', () => {
+  it('Firebase signOut을 호출한다', async () => {
+    signOut.mockResolvedValue()
+    await signOutSuperAdmin()
+    expect(signOut).toHaveBeenCalledWith({})
   })
 })
