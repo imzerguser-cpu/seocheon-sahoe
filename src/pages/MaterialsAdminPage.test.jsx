@@ -35,6 +35,7 @@ const sampleMaterial = {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
 })
 
 describe('MaterialsAdminPage', () => {
@@ -209,6 +210,18 @@ describe('MaterialsAdminPage', () => {
 
     await waitFor(() => expect(deleteMaterial).toHaveBeenCalledWith('m1'))
     await waitFor(() => expect(screen.queryByText('장항 신성리 갈대밭')).not.toBeInTheDocument())
+  })
+
+  it('삭제 확인 창에서 취소하면 deleteMaterial이 호출되지 않는다', async () => {
+    window.confirm.mockReturnValue(false)
+    fetchAllMaterials.mockResolvedValue([sampleMaterial])
+    renderPage()
+    await waitFor(() => expect(screen.getByText('장항 신성리 갈대밭')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+
+    expect(deleteMaterial).not.toHaveBeenCalled()
+    expect(screen.getByText('장항 신성리 갈대밭')).toBeInTheDocument()
   })
 
   it('수정 폼에서 저장하면 lessonIds 필드가 제외된 객체로 updateMaterial이 호출된다', async () => {

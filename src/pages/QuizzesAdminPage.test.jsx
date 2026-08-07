@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import QuizzesAdminPage from './QuizzesAdminPage.jsx'
@@ -35,6 +35,7 @@ function selectTarget() {
 beforeEach(() => {
   vi.clearAllMocks()
   fetchQuestions.mockResolvedValue([])
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
 })
 
 describe('QuizzesAdminPage', () => {
@@ -62,6 +63,76 @@ describe('QuizzesAdminPage', () => {
     fireEvent.change(screen.getByLabelText('출판사'), { target: { value: 'chunjae-park' } })
 
     await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
+  })
+
+  it('대상을 빠르게 바꾸면 이전 대상의 응답이 늦게 도착해도 최신 데이터만 반영한다', async () => {
+    let resolveFirst
+    const firstPromise = new Promise((resolve) => {
+      resolveFirst = resolve
+    })
+    fetchQuestions.mockImplementation((scope, refId) => {
+      if (refId === 'ecrimedia-u1-t5-l1') return firstPromise
+      if (refId === 'ecrimedia-u1-t5-l2') {
+        return Promise.resolve([
+          {
+            id: 'q2',
+            scope: 'lesson',
+            refId: 'ecrimedia-u1-t5-l2',
+            type: 'ox',
+            question: '두 번째 차시 문제',
+            answer: 'O',
+          },
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    renderPage()
+    fireEvent.change(screen.getByLabelText('출판사'), { target: { value: 'ecrimedia' } })
+    fireEvent.change(screen.getByLabelText('대단원'), { target: { value: 'ecrimedia-u1' } })
+    fireEvent.change(screen.getByLabelText('학습주제'), { target: { value: 'ecrimedia-u1-t5' } })
+    fireEvent.change(screen.getByLabelText('차시'), { target: { value: 'ecrimedia-u1-t5-l1' } })
+
+    // 첫 번째 차시 응답이 아직 대기 중인 상태에서 형제 차시로 빠르게 전환한다.
+    fireEvent.change(screen.getByLabelText('차시'), { target: { value: 'ecrimedia-u1-t5-l2' } })
+
+    await waitFor(() => expect(screen.getByText('두 번째 차시 문제')).toBeInTheDocument())
+
+    // 이전(첫 번째) 차시의 응답이 뒤늦게 도착해도 이미 벗어난 요청이므로 반영되면 안 된다.
+    await act(async () => {
+      resolveFirst([
+        {
+          id: 'q1',
+          scope: 'lesson',
+          refId: 'ecrimedia-u1-t5-l1',
+          type: 'ox',
+          question: '첫 번째 차시 문제',
+          answer: 'O',
+        },
+      ])
+      await firstPromise
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText('두 번째 차시 문제')).toBeInTheDocument()
+    expect(screen.queryByText('첫 번째 차시 문제')).not.toBeInTheDocument()
+  })
+
+  it('문제 목록을 불러오는 동안 로딩 문구를 보여준다', async () => {
+    let resolveFetch
+    fetchQuestions.mockImplementation(
+      () => new Promise((resolve) => { resolveFetch = resolve }),
+    )
+    renderPage()
+    selectTarget()
+
+    await waitFor(() => expect(screen.getByText('불러오는 중...')).toBeInTheDocument())
+
+    await act(async () => {
+      resolveFetch([])
+      await Promise.resolve()
+    })
+    expect(screen.queryByText('불러오는 중...')).not.toBeInTheDocument()
   })
 
   it('문제 목록을 불러오지 못하면 에러 메시지를 보여준다', async () => {
@@ -262,5 +333,20 @@ describe('QuizzesAdminPage', () => {
     // reload() after deleteQuestion().
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalledTimes(3))
     expect(fetchQuestions).toHaveBeenNthCalledWith(3, 'lesson', 'ecrimedia-u1-t2-l1')
+  })
+
+  it('삭제 확인 창에서 취소하면 deleteQuestion이 호출되지 않는다', async () => {
+    window.confirm.mockReturnValue(false)
+    fetchQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
+    ])
+    renderPage()
+    selectTarget()
+    await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+
+    expect(deleteQuestion).not.toHaveBeenCalled()
+    expect(screen.getByText('문제입니다')).toBeInTheDocument()
   })
 })

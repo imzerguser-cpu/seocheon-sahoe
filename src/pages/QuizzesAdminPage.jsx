@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
 import {
@@ -162,21 +162,40 @@ export default function QuizzesAdminPage() {
   const [lessonId, setLessonId] = useState(lessons[0]?.id ?? '')
 
   const [questions, setQuestions] = useState([])
+  const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [mode, setMode] = useState('list')
   const [saveError, setSaveError] = useState('')
+  // Monotonically-increasing token: reload() can be triggered either by the
+  // scope/refId effect below or imperatively from handleSave after a save.
+  // Each call captures the token current at its own start, and only applies
+  // its result if no newer reload() has started in the meantime — this is
+  // what makes a late-arriving response from an abandoned target a no-op.
+  const requestIdRef = useRef(0)
 
   const refId = refIdFor(scope, { unitId, topicId, lessonId })
 
   function reload() {
     if (!refId) {
+      requestIdRef.current += 1
       setQuestions([])
+      setLoading(false)
+      setLoadError(false)
       return
     }
+    const requestId = ++requestIdRef.current
+    setLoading(true)
     setLoadError(false)
     fetchQuestions(scope, refId)
-      .then(setQuestions)
-      .catch(() => setLoadError(true))
+      .then((list) => {
+        if (requestIdRef.current === requestId) setQuestions(list)
+      })
+      .catch(() => {
+        if (requestIdRef.current === requestId) setLoadError(true)
+      })
+      .finally(() => {
+        if (requestIdRef.current === requestId) setLoading(false)
+      })
   }
 
   useEffect(() => {
@@ -200,6 +219,7 @@ export default function QuizzesAdminPage() {
   }
 
   async function handleDelete(questionId) {
+    if (!window.confirm('이 문제를 삭제할까요? 되돌릴 수 없어요.')) return
     await deleteQuestion(questionId)
     reload()
   }
@@ -313,7 +333,8 @@ export default function QuizzesAdminPage() {
         새 문제 추가
       </button>
 
-      {loadError && <p className="empty-state">문제 목록을 불러오지 못했어요.</p>}
+      {loading && <p className="empty-state">불러오는 중...</p>}
+      {!loading && loadError && <p className="empty-state">문제 목록을 불러오지 못했어요.</p>}
 
       <ul className="questions-list">
         {questions.map((q) => (

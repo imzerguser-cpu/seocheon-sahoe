@@ -270,6 +270,7 @@ export default function MaterialsAdminPage() {
   }
 
   async function handleDelete(materialId) {
+    if (!window.confirm('이 자료를 삭제할까요? 되돌릴 수 없어요.')) return
     await deleteMaterial(materialId)
     reload()
   }
