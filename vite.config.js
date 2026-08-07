@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// base는 GitHub Pages 저장소 이름과 반드시 일치해야 합니다.
-// 저장소 이름을 "seocheon-sahoe"가 아닌 다른 이름으로 만들면 이 값도 바꿔야 합니다.
+// Firebase Hosting은 도메인 루트(예: seocheon-society.web.app/)에서 서비스하므로
+// base를 '/'로 둡니다. GitHub Pages 하위 경로 배포로 다시 바꾸는 경우에만
+// 저장소 이름과 일치하는 값('/seocheon-sahoe/' 등)으로 되돌리세요.
 export default defineConfig({
   plugins: [react()],
-  base: '/seocheon-sahoe/',
+  base: '/',
   test: {
     environment: 'jsdom',
     setupFiles: './src/setupTests.js',
