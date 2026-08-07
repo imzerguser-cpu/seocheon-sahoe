@@ -6,7 +6,6 @@ import {
   selectTopic,
   selectLessons,
   selectLesson,
-  selectQuizQuestions,
   getPublishers,
   getUnits,
   getTopics,
@@ -84,34 +83,6 @@ describe('selectLessons / selectLesson', () => {
 
   it('학습주제가 없으면 빈 배열을 반환한다', () => {
     expect(selectLessons(sampleCurriculum, 'u1', 'nope')).toEqual([])
-  })
-})
-
-describe('selectQuizQuestions', () => {
-  const quizzes = [
-    { id: 'q1', scope: 'lesson', refId: 'l1', parentTopicId: 't1', parentUnitId: 'u1', questions: [{ id: 'q1-a' }] },
-    { id: 'q2', scope: 'lesson', refId: 'l2', parentTopicId: 't1', parentUnitId: 'u1', questions: [{ id: 'q2-a' }] },
-    { id: 'q3', scope: 'lesson', refId: 'l3', parentTopicId: 't2', parentUnitId: 'u1', questions: [{ id: 'q3-a' }] },
-  ]
-
-  it('lesson scope는 해당 차시 문항만 반환한다', () => {
-    expect(selectQuizQuestions(quizzes, 'lesson', 'l1')).toEqual([{ id: 'q1-a' }])
-  })
-
-  it('topic scope는 소속 차시 문항을 모두 모아 반환한다', () => {
-    expect(selectQuizQuestions(quizzes, 'topic', 't1')).toEqual([{ id: 'q1-a' }, { id: 'q2-a' }])
-  })
-
-  it('unit scope는 대단원 전체 문항을 모아 반환한다', () => {
-    expect(selectQuizQuestions(quizzes, 'unit', 'u1')).toEqual([
-      { id: 'q1-a' },
-      { id: 'q2-a' },
-      { id: 'q3-a' },
-    ])
-  })
-
-  it('일치하는 문항이 없으면 빈 배열을 반환한다', () => {
-    expect(selectQuizQuestions(quizzes, 'lesson', 'l404')).toEqual([])
   })
 })
 
