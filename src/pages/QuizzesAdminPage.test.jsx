@@ -155,5 +155,15 @@ describe('QuizzesAdminPage', () => {
 
     await waitFor(() => expect(deleteQuestion).toHaveBeenCalledWith('q1'))
     await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
+
+    // Guard against a regression to local-filter deletion: with only one
+    // question in the fixture, a synchronous setQuestions(prev => prev
+    // .filter(...)) would also leave the list empty, so the assertions
+    // above alone can't tell reload-based delete apart from local-filter
+    // delete. Asserting a 3rd fetchQuestions call (mount + target-settle
+    // + post-delete reload) only holds if handleDelete actually calls
+    // reload() after deleteQuestion().
+    await waitFor(() => expect(fetchQuestions).toHaveBeenCalledTimes(3))
+    expect(fetchQuestions).toHaveBeenNthCalledWith(3, 'lesson', 'ecrimedia-u1-t2-l1')
   })
 })
