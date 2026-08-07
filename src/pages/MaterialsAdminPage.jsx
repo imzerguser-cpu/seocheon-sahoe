@@ -29,7 +29,7 @@ function lessonRefLabel(ref) {
 }
 
 function MaterialForm({ initial, onSave, onCancel, error }) {
-  const { id: _id, ...initialWithoutId } = initial ?? emptyForm
+  const { id: _id, lessonIds: _lessonIds, ...initialWithoutId } = initial ?? emptyForm
   const [form, setForm] = useState(initialWithoutId)
   const [resourceType, setResourceType] = useState('photo')
   const [resourceTitle, setResourceTitle] = useState('')

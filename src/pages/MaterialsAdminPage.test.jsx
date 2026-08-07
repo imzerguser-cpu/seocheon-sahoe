@@ -172,6 +172,24 @@ describe('MaterialsAdminPage', () => {
     await waitFor(() => expect(screen.queryByText('장항 신성리 갈대밭')).not.toBeInTheDocument())
   })
 
+  it('수정 폼에서 저장하면 lessonIds 필드가 제외된 객체로 updateMaterial이 호출된다', async () => {
+    const materialWithStaleLessonIds = {
+      ...sampleMaterial,
+      lessonIds: ['stale-lesson-id'],
+    }
+    fetchAllMaterials.mockResolvedValue([materialWithStaleLessonIds])
+    updateMaterial.mockResolvedValue()
+    render(<MaterialsAdminPage />)
+    await waitFor(() => expect(screen.getByText('장항 신성리 갈대밭')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: '수정' }))
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() => expect(updateMaterial).toHaveBeenCalled())
+    const calledArg = updateMaterial.mock.calls[0][1]
+    expect('lessonIds' in calledArg).toBe(false)
+  })
+
   it('수정 폼에서 저장하면 id 필드가 제외된 객체로 updateMaterial이 호출된다', async () => {
     fetchAllMaterials.mockResolvedValue([sampleMaterial])
     updateMaterial.mockResolvedValue()
