@@ -20,24 +20,42 @@ export default function LessonDetailPage() {
   useEffect(() => {
     if (!lesson) return
 
+    let ignore = false
+
     setMaterialsLoading(true)
     setMaterialsError(false)
+    setQuizScopes([])
+
     fetchMaterialsForLesson(lessonId)
-      .then((list) => setMaterials(list))
-      .catch(() => setMaterialsError(true))
-      .finally(() => setMaterialsLoading(false))
+      .then((list) => {
+        if (!ignore) setMaterials(list)
+      })
+      .catch(() => {
+        if (!ignore) setMaterialsError(true)
+      })
+      .finally(() => {
+        if (!ignore) setMaterialsLoading(false)
+      })
 
     Promise.all([
       fetchQuestions('lesson', lessonId),
       fetchQuestions('topic', topicId),
       fetchQuestions('unit', unitId),
-    ]).then(([lessonQuestions, topicQuestions, unitQuestions]) => {
-      const scopes = []
-      if (lessonQuestions.length > 0) scopes.push('lesson')
-      if (topicQuestions.length > 0) scopes.push('topic')
-      if (unitQuestions.length > 0) scopes.push('unit')
-      setQuizScopes(scopes)
-    })
+    ])
+      .then(([lessonQuestions, topicQuestions, unitQuestions]) => {
+        const scopes = []
+        if (lessonQuestions.length > 0) scopes.push('lesson')
+        if (topicQuestions.length > 0) scopes.push('topic')
+        if (unitQuestions.length > 0) scopes.push('unit')
+        if (!ignore) setQuizScopes(scopes)
+      })
+      .catch(() => {
+        if (!ignore) setQuizScopes([])
+      })
+
+    return () => {
+      ignore = true
+    }
   }, [lessonId, topicId, unitId, lesson])
 
   if (!lesson) {

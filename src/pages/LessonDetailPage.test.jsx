@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import LessonDetailPage from './LessonDetailPage.jsx'
@@ -108,5 +108,41 @@ describe('LessonDetailPage', () => {
     )
     expect(screen.queryByText('이 차시 퀴즈')).not.toBeInTheDocument()
     expect(screen.queryByText('이 대단원 퀴즈')).not.toBeInTheDocument()
+  })
+
+  it('차시를 빠르게 이동해 이전 차시 응답이 늦게 도착해도 최신 차시 데이터만 반영한다', async () => {
+    let resolveFirstLessonMaterials
+    const firstLessonPromise = new Promise((resolve) => {
+      resolveFirstLessonMaterials = resolve
+    })
+
+    fetchMaterialsForLesson.mockImplementation((id) => {
+      if (id === 'ecrimedia-u1-t5-l1') return firstLessonPromise
+      if (id === 'ecrimedia-u1-t5-l2') {
+        return Promise.resolve([
+          { id: 'm2', title: '두 번째 차시 자료', usageNote: '', resources: [] },
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    renderPage('/p/ecrimedia/ecrimedia-u1/ecrimedia-u1-t5/ecrimedia-u1-t5-l1')
+
+    // 첫 번째 차시의 자료 요청이 아직 대기 중인 상태에서 다음 차시로 이동한다.
+    fireEvent.click(screen.getByRole('link', { name: '다음 차시 ▶' }))
+
+    await waitFor(() => expect(screen.getByText('두 번째 차시 자료')).toBeInTheDocument())
+
+    // 이전(첫 번째) 차시의 응답이 뒤늦게 도착해도, 이미 벗어난 요청이므로 상태를 덮어써서는 안 된다.
+    await act(async () => {
+      resolveFirstLessonMaterials([
+        { id: 'm1', title: '첫 번째 차시 자료', usageNote: '', resources: [] },
+      ])
+      await firstLessonPromise
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText('두 번째 차시 자료')).toBeInTheDocument()
+    expect(screen.queryByText('첫 번째 차시 자료')).not.toBeInTheDocument()
   })
 })
