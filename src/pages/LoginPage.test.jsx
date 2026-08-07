@@ -30,7 +30,7 @@ describe('LoginPage', () => {
     expect(select.options).toHaveLength(schools.length)
   })
 
-  it('올바른 학교 비밀번호를 입력하면 세션이 저장되고 해당 출판사 대단원 목록으로 이동한다', () => {
+  it('올바른 학교 비밀번호를 입력하면 세션이 저장되고 해당 출판사 대단원 목록으로 이동한다 (기본값: 학생)', () => {
     renderLoginPage()
     const firstSchool = schools[0]
 
@@ -45,6 +45,26 @@ describe('LoginPage', () => {
       schoolName: firstSchool.name,
       publisherId: firstSchool.publisherId,
       studentName: '홍길동',
+      role: 'student',
+    })
+  })
+
+  it('"저는 선생님이에요" 체크박스를 선택하고 로그인하면 role이 teacher로 저장된다', () => {
+    renderLoginPage()
+    const firstSchool = schools[0]
+
+    fireEvent.change(screen.getByLabelText('학교'), { target: { value: firstSchool.id } })
+    fireEvent.change(screen.getByLabelText('이름'), { target: { value: '김선생' } })
+    fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: firstSchool.password } })
+    fireEvent.click(screen.getByLabelText('저는 선생님이에요'))
+    fireEvent.click(screen.getByRole('button', { name: '입장하기' }))
+
+    expect(getSession()).toEqual({
+      schoolId: firstSchool.id,
+      schoolName: firstSchool.name,
+      publisherId: firstSchool.publisherId,
+      studentName: '김선생',
+      role: 'teacher',
     })
   })
 

@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [schoolId, setSchoolId] = useState(schools[0]?.id ?? '')
   const [studentName, setStudentName] = useState('')
   const [password, setPassword] = useState('')
+  const [isTeacher, setIsTeacher] = useState(false)
   const [error, setError] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -25,6 +26,7 @@ export default function LoginPage() {
       schoolName: school.name,
       publisherId: school.publisherId,
       studentName,
+      role: isTeacher ? 'teacher' : 'student',
     })
     navigate(`/p/${school.publisherId}`)
   }
@@ -59,6 +61,16 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="학교 비밀번호를 입력하세요"
         />
+
+        <label className="teacher-checkbox-label" htmlFor="isTeacher">
+          <input
+            id="isTeacher"
+            type="checkbox"
+            checked={isTeacher}
+            onChange={(e) => setIsTeacher(e.target.checked)}
+          />
+          저는 선생님이에요
+        </label>
 
         <button type="submit">입장하기</button>
         {error && <p role="alert">{error}</p>}
