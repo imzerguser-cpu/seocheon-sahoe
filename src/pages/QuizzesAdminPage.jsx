@@ -174,7 +174,7 @@ export default function QuizzesAdminPage() {
 
   async function handleDelete(questionId) {
     await deleteQuestion(questionId)
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId))
+    reload()
   }
 
   if (mode === 'create') {

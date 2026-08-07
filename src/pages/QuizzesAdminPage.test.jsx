@@ -129,9 +129,23 @@ describe('QuizzesAdminPage', () => {
   })
 
   it('삭제 버튼을 누르면 deleteQuestion이 호출되고 목록에서 사라진다', async () => {
-    fetchQuestions.mockResolvedValue([
-      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
-    ])
+    const sampleQuestion = {
+      id: 'q1',
+      scope: 'lesson',
+      refId: 'ecrimedia-u1-t2-l1',
+      type: 'ox',
+      question: '문제입니다',
+      answer: 'O',
+    }
+    // fetchQuestions fires twice before the delete: once on initial mount
+    // (with the default scope/target) and once more after selectTarget()
+    // settles on the final target. Both must resolve with the question so
+    // it can be found and deleted; only the reload triggered by the delete
+    // itself should come back empty.
+    fetchQuestions
+      .mockResolvedValueOnce([sampleQuestion])
+      .mockResolvedValueOnce([sampleQuestion])
+      .mockResolvedValueOnce([])
     deleteQuestion.mockResolvedValue()
     render(<QuizzesAdminPage />)
     selectTarget()
@@ -140,6 +154,6 @@ describe('QuizzesAdminPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '삭제' }))
 
     await waitFor(() => expect(deleteQuestion).toHaveBeenCalledWith('q1'))
-    expect(screen.queryByText('문제입니다')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
   })
 })
