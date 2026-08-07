@@ -1,9 +1,22 @@
 # 서천 지역화 자료 사이트
 
+## Firebase 프로젝트 설정 (최초 1회)
+
+이번 단계부터 관리자가 올리는 자료·퀴즈를 저장하기 위해 Firestore를 사용합니다.
+
+1. https://console.firebase.google.com 에서 프로젝트를 새로 만들거나 기존 프로젝트를 연다.
+2. Firestore Database를 프로덕션 모드로 생성한다.
+3. Authentication → 로그인 방법 → "이메일/비밀번호" 사용 설정 → 사용자 탭에서 전체관리자 계정 1개를 수동으로 생성한다(이메일/비밀번호는 직접 정한다).
+4. 프로젝트 설정 → 내 앱 → 웹 앱 추가 → 표시된 설정값을 `.env.local`에 복사한다(`.env.example` 참고).
+5. GitHub 저장소 Settings → Secrets and variables → Actions에도 같은 이름으로 6개 값을 Repository secret으로 등록한다(배포 시 필요).
+6. Firestore 보안 규칙은 `firestore.rules` 파일 내용을 Firebase 콘솔의 Firestore → 규칙 탭에 붙여넣고 게시한다.
+7. 전체관리자 비밀번호를 바꾸려면 Authentication 콘솔에서 직접 재설정한다(사이트 내 비밀번호 찾기 기능 없음).
+
 ## 개발 환경 실행
 
 ```bash
 npm install
+cp .env.example .env.local   # 값 채우기
 npm run dev
 ```
 
