@@ -87,6 +87,18 @@ describe('LessonDetailPage', () => {
     expect(screen.getByText('자료 준비 중입니다.')).toBeInTheDocument()
   })
 
+  it('자료 문서에 resources 필드가 없어도 오류 없이 준비 중 문구를 보여준다', async () => {
+    fetchMaterialsForLesson.mockResolvedValue([
+      { id: 'm1', title: '자료 필드 누락 케이스', usageNote: '' },
+    ])
+    renderPage('/p/ecrimedia/ecrimedia-u1/ecrimedia-u1-t5/ecrimedia-u1-t5-l1')
+
+    await waitFor(() =>
+      expect(screen.getByText('자료 필드 누락 케이스')).toBeInTheDocument(),
+    )
+    expect(screen.getByText('자료 준비 중입니다.')).toBeInTheDocument()
+  })
+
   it('자료를 불러오지 못하면 에러 안내를 보여준다', async () => {
     fetchMaterialsForLesson.mockRejectedValue(new Error('network error'))
     renderPage('/p/ecrimedia/ecrimedia-u1/ecrimedia-u1-t5/ecrimedia-u1-t5-l1')

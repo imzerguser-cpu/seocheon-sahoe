@@ -104,7 +104,7 @@ export default function LessonDetailPage() {
           <section key={material.id} className="topic-block">
             <h2>{material.title}</h2>
             <p className="topic-usage">{material.usageNote || '활용 방법을 준비 중입니다.'}</p>
-            {material.resources.length === 0 ? (
+            {(material.resources?.length ?? 0) === 0 ? (
               <p className="empty-state">자료 준비 중입니다.</p>
             ) : (
               <div className="resource-list">
