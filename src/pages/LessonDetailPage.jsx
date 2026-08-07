@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { getUnit, getTopic, getLessons, getLesson } from '../lib/dataLoader.js'
 import { fetchMaterialsForLesson } from '../lib/materialsRepo.js'
-import { fetchQuestions } from '../lib/quizzesRepo.js'
-import ResourceCard from '../components/ResourceCard.jsx'
+import { fetchAllQuestions } from '../lib/quizzesRepo.js'
+import { selectVisibleQuestionsForScope } from '../lib/quizVisibility.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
+import ResourceCard, { isSafeUrl } from '../components/ResourceCard.jsx'
 
 export default function LessonDetailPage() {
   const { publisherId, unitId, topicId, lessonId } = useParams()
+  const { session } = useAuth()
+  const isTeacher = session?.role === 'teacher'
   const unit = getUnit(publisherId, unitId)
   const topic = getTopic(publisherId, unitId, topicId)
   const lessons = getLessons(publisherId, unitId, topicId)
@@ -37,16 +41,24 @@ export default function LessonDetailPage() {
         if (!ignore) setMaterialsLoading(false)
       })
 
-    Promise.all([
-      fetchQuestions('lesson', lessonId),
-      fetchQuestions('topic', topicId),
-      fetchQuestions('unit', unitId),
-    ])
-      .then(([lessonQuestions, topicQuestions, unitQuestions]) => {
+    fetchAllQuestions()
+      .then((all) => {
         const scopes = []
-        if (lessonQuestions.length > 0) scopes.push('lesson')
-        if (topicQuestions.length > 0) scopes.push('topic')
-        if (unitQuestions.length > 0) scopes.push('unit')
+        if (
+          selectVisibleQuestionsForScope(all, { publisherId, scope: 'lesson', refId: lessonId })
+            .length > 0
+        )
+          scopes.push('lesson')
+        if (
+          selectVisibleQuestionsForScope(all, { publisherId, scope: 'topic', refId: topicId })
+            .length > 0
+        )
+          scopes.push('topic')
+        if (
+          selectVisibleQuestionsForScope(all, { publisherId, scope: 'unit', refId: unitId })
+            .length > 0
+        )
+          scopes.push('unit')
         if (!ignore) setQuizScopes(scopes)
       })
       .catch(() => {
@@ -56,7 +68,7 @@ export default function LessonDetailPage() {
     return () => {
       ignore = true
     }
-  }, [lessonId, topicId, unitId, lesson])
+  }, [publisherId, lessonId, topicId, unitId, lesson])
 
   if (!lesson) {
     return <Navigate to={`/p/${publisherId}`} replace />
@@ -95,15 +107,32 @@ export default function LessonDetailPage() {
         <p className="empty-state">자료를 불러오지 못했어요.</p>
       )}
       {!materialsLoading && !materialsError && materials.length === 0 && (
-        <p className="empty-state">아직 연결된 서천 지역화 자료가 없어요.</p>
+        <p className="empty-state">
+          {quizScopes.length > 0
+            ? '이 차시에는 퀴즈만 준비되어 있어요. 아래에서 풀어보세요!'
+            : '아직 연결된 서천 지역화 자료가 없어요.'}
+        </p>
       )}
 
       {!materialsLoading &&
         !materialsError &&
         materials.map((material) => (
           <section key={material.id} className="topic-block">
-            <h2>{material.title}</h2>
-            <p className="topic-usage">{material.usageNote || '활용 방법을 준비 중입니다.'}</p>
+            {isTeacher && (
+              <div className="teacher-usage-note">
+                <p className="topic-usage">{material.usageNote || '활용 방법을 준비 중입니다.'}</p>
+                {isSafeUrl(material.usageFileUrl) && (
+                  <a
+                    href={material.usageFileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="usage-file-link"
+                  >
+                    📄 교사용 활용법 파일 열기
+                  </a>
+                )}
+              </div>
+            )}
             {(material.resources?.length ?? 0) === 0 ? (
               <p className="empty-state">자료 준비 중입니다.</p>
             ) : (
@@ -118,21 +147,25 @@ export default function LessonDetailPage() {
 
       <div className="quiz-links">
         {quizScopes.includes('lesson') && (
-          <Link to={`/quiz/lesson/${lessonId}`} className="quiz-link">
+          <Link to={`/quiz/${publisherId}/lesson/${lessonId}`} className="quiz-link">
             이 차시 퀴즈
           </Link>
         )}
         {quizScopes.includes('topic') && (
-          <Link to={`/quiz/topic/${topicId}`} className="quiz-link">
+          <Link to={`/quiz/${publisherId}/topic/${topicId}`} className="quiz-link">
             이 학습주제 퀴즈
           </Link>
         )}
         {quizScopes.includes('unit') && (
-          <Link to={`/quiz/unit/${unitId}`} className="quiz-link">
+          <Link to={`/quiz/${publisherId}/unit/${unitId}`} className="quiz-link">
             이 대단원 퀴즈
           </Link>
         )}
       </div>
+
+      <Link to={`/p/${publisherId}/${unitId}/${topicId}/${lessonId}/quiz-submit`} className="quiz-link">
+        ✏️ 이 차시 퀴즈 만들기
+      </Link>
     </main>
   )
 }

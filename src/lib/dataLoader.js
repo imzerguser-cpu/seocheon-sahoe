@@ -57,3 +57,48 @@ export function getLessons(publisherId, unitId, topicId) {
 export function getLesson(publisherId, unitId, topicId, lessonId) {
   return selectLesson(curricula[publisherId], unitId, topicId, lessonId)
 }
+
+/**
+ * 기준(source) 차시와 진도표상 순서(대단원 order, 학습주제 order)가 같은 차시를
+ * 나머지 모든 출판사에서 찾는다. 진도표의 학습주제 순서가 출판사 간에도 거의 같은
+ * 내용을 다룬다는 전제로, 성취기준이 아닌 순서 기반으로 매칭한다.
+ */
+export function findMatchingLessonsAcrossPublishers(
+  sourcePublisherId,
+  sourceUnitId,
+  sourceTopicId,
+  sourceLessonId,
+) {
+  const sourceUnit = getUnit(sourcePublisherId, sourceUnitId)
+  const sourceTopic = getTopic(sourcePublisherId, sourceUnitId, sourceTopicId)
+  const sourceLesson = getLesson(sourcePublisherId, sourceUnitId, sourceTopicId, sourceLessonId)
+  if (!sourceUnit || !sourceTopic || !sourceLesson) return []
+
+  const matches = []
+  for (const publisher of getPublishers()) {
+    if (publisher.id === sourcePublisherId) continue
+
+    const matchedUnit = getUnits(publisher.id).find((u) => u.order === sourceUnit.order)
+    if (!matchedUnit) continue
+
+    const matchedTopic = getTopics(publisher.id, matchedUnit.id).find(
+      (t) => t.order === sourceTopic.order,
+    )
+    if (!matchedTopic) continue
+
+    const targetLessons = getLessons(publisher.id, matchedUnit.id, matchedTopic.id)
+    if (targetLessons.length === 0) continue
+
+    const matchedLesson =
+      targetLessons.find((l) => l.차시순서 === sourceLesson.차시순서) ??
+      targetLessons[targetLessons.length - 1]
+
+    matches.push({
+      publisherId: publisher.id,
+      unitId: matchedUnit.id,
+      topicId: matchedTopic.id,
+      lessonId: matchedLesson.id,
+    })
+  }
+  return matches
+}

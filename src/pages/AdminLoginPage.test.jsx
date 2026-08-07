@@ -3,21 +3,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import AdminLoginPage from './AdminLoginPage.jsx'
 
-vi.mock('../lib/adminConfigRepo.js', () => ({
-  fetchAdminConfig: vi.fn(),
+vi.mock('../lib/schoolPasswordsRepo.js', () => ({
+  fetchSchoolAdminPasswords: vi.fn(),
 }))
 vi.mock('../lib/auth.js', () => ({
-  matchAdminPassword: vi.fn((config, input) => !!config && input === config.password),
   saveAdminSession: vi.fn(),
   signInSuperAdmin: vi.fn(),
 }))
 
-import { fetchAdminConfig } from '../lib/adminConfigRepo.js'
+import { fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
 import { saveAdminSession, signInSuperAdmin } from '../lib/auth.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
   localStorage.clear()
+  fetchSchoolAdminPasswords.mockResolvedValue({ 'songlim-cho': '20262026' })
 })
 
 function renderPage() {
@@ -32,27 +32,40 @@ function renderPage() {
 }
 
 describe('AdminLoginPage', () => {
-  it('기본값은 학교관리자 탭이고 비밀번호 입력만 보인다', () => {
+  it('기본값은 학교관리자 탭이고 학교/담당자 이름/비밀번호 입력이 보인다', () => {
     renderPage()
+    expect(screen.getByLabelText('학교')).toBeInTheDocument()
+    expect(screen.getByLabelText('담당자 이름')).toBeInTheDocument()
     expect(screen.getByLabelText('비밀번호')).toBeInTheDocument()
     expect(screen.queryByLabelText('이메일')).not.toBeInTheDocument()
   })
 
-  it('학교관리자: 올바른 비밀번호면 학교관리자 세션이 저장되고 대시보드로 이동한다', async () => {
-    fetchAdminConfig.mockResolvedValue({ password: '20262026' })
+  it('학교 선택 목록은 OO초등학교 전체 명칭으로 보인다', () => {
+    renderPage()
+    expect(screen.getByRole('option', { name: '송림초등학교' })).toBeInTheDocument()
+  })
+
+  it('학교관리자: 올바른 비밀번호면(선택한 학교의 관리자 비밀번호와 일치) 학교/담당자 이름이 담긴 세션이 저장되고 대시보드로 이동한다', async () => {
     renderPage()
 
+    fireEvent.change(screen.getByLabelText('학교'), { target: { value: 'songlim-cho' } })
+    fireEvent.change(screen.getByLabelText('담당자 이름'), { target: { value: '김선생' } })
     fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: '20262026' } })
     fireEvent.click(screen.getByRole('button', { name: '로그인' }))
 
     await waitFor(() => expect(screen.getByText('관리자 대시보드 페이지')).toBeInTheDocument())
-    expect(saveAdminSession).toHaveBeenCalledWith('school-admin')
+    expect(saveAdminSession).toHaveBeenCalledWith({
+      role: 'school-admin',
+      schoolId: 'songlim-cho',
+      schoolName: '송림초등학교',
+      teacherName: '김선생',
+    })
   })
 
   it('학교관리자: 틀린 비밀번호면 에러를 보여준다', async () => {
-    fetchAdminConfig.mockResolvedValue({ password: '20262026' })
     renderPage()
 
+    fireEvent.change(screen.getByLabelText('학교'), { target: { value: 'songlim-cho' } })
     fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: 'wrong' } })
     fireEvent.click(screen.getByRole('button', { name: '로그인' }))
 
@@ -60,6 +73,22 @@ describe('AdminLoginPage', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('비밀번호가 올바르지 않아요'),
     )
     expect(saveAdminSession).not.toHaveBeenCalled()
+  })
+
+  it('학교관리자: 같은 비밀번호라도 다른 학교로 선택하면 실패한다(학교마다 다른 비밀번호)', async () => {
+    fetchSchoolAdminPasswords.mockResolvedValue({
+      'songlim-cho': '20262026',
+      'jangang-cho': '1111',
+    })
+    renderPage()
+
+    fireEvent.change(screen.getByLabelText('학교'), { target: { value: 'jangang-cho' } })
+    fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: '20262026' } })
+    fireEvent.click(screen.getByRole('button', { name: '로그인' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('비밀번호가 올바르지 않아요'),
+    )
   })
 
   it('전체관리자 탭을 누르면 이메일/비밀번호 입력으로 바뀐다', () => {
@@ -79,7 +108,7 @@ describe('AdminLoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '로그인' }))
 
     await waitFor(() => expect(screen.getByText('관리자 대시보드 페이지')).toBeInTheDocument())
-    expect(saveAdminSession).toHaveBeenCalledWith('super-admin')
+    expect(saveAdminSession).toHaveBeenCalledWith({ role: 'super-admin' })
   })
 
   it('전체관리자: 로그인 실패하면 에러를 보여준다', async () => {

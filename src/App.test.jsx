@@ -49,9 +49,27 @@ describe('App', () => {
     expect(screen.getByText('관리자 로그인')).toBeInTheDocument()
   })
 
-  it('전체관리자 세션이 없으면 비밀번호 변경 페이지 대신 관리자 로그인으로 보낸다', () => {
+  it('관리자 세션이 없으면 학교 비밀번호 관리 페이지 대신 관리자 로그인으로 보낸다', () => {
     render(
-      <MemoryRouter initialEntries={['/admin/password']}>
+      <MemoryRouter initialEntries={['/admin/school-passwords']}>
+        <App />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('관리자 로그인')).toBeInTheDocument()
+  })
+
+  it('전체관리자 세션이 없으면 검토 대기 자료 페이지 대신 관리자 로그인으로 보낸다', () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/materials/review']}>
+        <App />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('관리자 로그인')).toBeInTheDocument()
+  })
+
+  it('관리자 세션이 없으면 검토 대기 퀴즈 페이지 대신 관리자 로그인으로 보낸다', () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/quizzes/review']}>
         <App />
       </MemoryRouter>,
     )

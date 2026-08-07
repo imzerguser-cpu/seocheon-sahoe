@@ -8,7 +8,6 @@ import {
   getAdminSession,
   clearAdminSession,
   matchSchool,
-  matchAdminPassword,
   signInSuperAdmin,
   signOutSuperAdmin,
 } from './auth.js'
@@ -61,14 +60,24 @@ describe('admin session storage', () => {
     expect(getAdminSession()).toBeNull()
   })
 
-  it('학교관리자 세션을 저장하고 확인할 수 있다', () => {
-    saveAdminSession('school-admin')
-    expect(getAdminSession()).toBe('school-admin')
+  it('학교관리자 세션을 저장하고 확인할 수 있다 (학교/담당자 정보 포함)', () => {
+    saveAdminSession({
+      role: 'school-admin',
+      schoolId: 'a-cho',
+      schoolName: 'A초',
+      teacherName: '홍길동',
+    })
+    expect(getAdminSession()).toEqual({
+      role: 'school-admin',
+      schoolId: 'a-cho',
+      schoolName: 'A초',
+      teacherName: '홍길동',
+    })
   })
 
-  it('전체관리자 세션을 저장하고 확인할 수 있다', () => {
+  it('역할 문자열만 넘겨도 세션으로 저장된다', () => {
     saveAdminSession('super-admin')
-    expect(getAdminSession()).toBe('super-admin')
+    expect(getAdminSession()).toEqual({ role: 'super-admin' })
   })
 
   it('알 수 없는 값이 저장되어 있으면 null을 반환한다', () => {
@@ -88,37 +97,28 @@ describe('matchSchool', () => {
     { id: 'a-cho', name: 'A초', publisherId: 'jihak', password: '0101' },
     { id: 'b-cho', name: 'B초', publisherId: 'donga', password: '0202' },
   ]
+  const passwords = { 'a-cho': '0101', 'b-cho': '0202' }
 
-  it('학교 id와 비밀번호가 맞으면 해당 학교를 반환한다', () => {
-    expect(matchSchool(schools, 'a-cho', '0101')).toEqual(schools[0])
+  it('학교 id와 비밀번호(passwords 맵 기준)가 맞으면 해당 학교를 반환한다', () => {
+    expect(matchSchool(schools, 'a-cho', '0101', passwords)).toEqual(schools[0])
   })
 
   it('비밀번호가 틀리면 null을 반환한다', () => {
-    expect(matchSchool(schools, 'a-cho', 'wrong')).toBeNull()
+    expect(matchSchool(schools, 'a-cho', 'wrong', passwords)).toBeNull()
   })
 
   it('존재하지 않는 학교면 null을 반환한다', () => {
-    expect(matchSchool(schools, 'nope', '0101')).toBeNull()
+    expect(matchSchool(schools, 'nope', '0101', passwords)).toBeNull()
   })
 
   it('비밀번호가 비어 있으면 null을 반환한다', () => {
-    expect(matchSchool(schools, 'a-cho', '')).toBeNull()
-  })
-})
-
-describe('matchAdminPassword', () => {
-  const adminConfig = { password: '20262026' }
-
-  it('비밀번호가 맞으면 true를 반환한다', () => {
-    expect(matchAdminPassword(adminConfig, '20262026')).toBe(true)
+    expect(matchSchool(schools, 'a-cho', '', passwords)).toBeNull()
   })
 
-  it('비밀번호가 틀리면 false를 반환한다', () => {
-    expect(matchAdminPassword(adminConfig, 'wrong')).toBe(false)
-  })
-
-  it('config가 없으면 false를 반환한다', () => {
-    expect(matchAdminPassword(null, '20262026')).toBe(false)
+  it('passwords 맵이 바뀌면(운영 중 비밀번호 변경) 새 비밀번호로만 통과한다', () => {
+    const updated = { 'a-cho': '9999', 'b-cho': '0202' }
+    expect(matchSchool(schools, 'a-cho', '0101', updated)).toBeNull()
+    expect(matchSchool(schools, 'a-cho', '9999', updated)).toEqual(schools[0])
   })
 })
 

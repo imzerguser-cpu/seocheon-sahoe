@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchQuestions } from '../lib/quizzesRepo.js'
+import { fetchAllQuestions } from '../lib/quizzesRepo.js'
+import { selectVisibleQuestionsForScope } from '../lib/quizVisibility.js'
+import { normalizeChoice } from '../lib/quizChoices.js'
 import QuizPlaceholder from '../components/QuizPlaceholder.jsx'
 
 const VALID_SCOPES = ['lesson', 'topic', 'unit']
@@ -28,12 +30,22 @@ function QuizQuestion({ question }) {
   return (
     <li className="quiz-question">
       <p>{question.question}</p>
+      {question.submittedBy && (
+        <p className="quiz-submitted-by">
+          만든이: {question.submittedBy.schoolName} · {question.submittedBy.studentName}
+        </p>
+      )}
 
       {question.type === 'multiple-choice' && (
         <ul>
-          {question.choices.map((choice, i) => (
-            <li key={`${choice}-${i}`}>
-              <label htmlFor={`choice-${question.id}-${i}`}>{choice}</label>
+          {question.choices.map(normalizeChoice).map((choice, i) => (
+            <li key={`${choice.text}-${i}`}>
+              <label htmlFor={`choice-${question.id}-${i}`}>
+                {choice.imageUrl && (
+                  <img src={choice.imageUrl} alt={choice.text} className="choice-image" />
+                )}
+                {choice.text}
+              </label>
               <input
                 id={`choice-${question.id}-${i}`}
                 type="radio"
@@ -94,7 +106,7 @@ function QuizQuestion({ question }) {
 }
 
 export default function QuizPage() {
-  const { scope, refId } = useParams()
+  const { publisherId, scope, refId } = useParams()
   const navigate = useNavigate()
   const isValidScope = VALID_SCOPES.includes(scope)
   const [questions, setQuestions] = useState([])
@@ -108,16 +120,16 @@ export default function QuizPage() {
     }
     setLoading(true)
     setLoadError(false)
-    fetchQuestions(scope, refId)
-      .then((list) => {
-        setQuestions(list)
+    fetchAllQuestions()
+      .then((all) => {
+        setQuestions(selectVisibleQuestionsForScope(all, { publisherId, scope, refId }))
         setLoading(false)
       })
       .catch(() => {
         setLoadError(true)
         setLoading(false)
       })
-  }, [scope, refId, isValidScope])
+  }, [publisherId, scope, refId, isValidScope])
 
   return (
     <main>

@@ -25,29 +25,32 @@ export function clearSession() {
   localStorage.removeItem(SESSION_KEY)
 }
 
-export function saveAdminSession(role) {
-  localStorage.setItem(ADMIN_SESSION_KEY, role)
+export function saveAdminSession(session) {
+  const normalized = typeof session === 'string' ? { role: session } : session
+  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(normalized))
 }
 
 export function getAdminSession() {
-  const role = localStorage.getItem(ADMIN_SESSION_KEY)
-  return ADMIN_ROLES.includes(role) ? role : null
+  const raw = localStorage.getItem(ADMIN_SESSION_KEY)
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || !ADMIN_ROLES.includes(parsed.role)) return null
+    return parsed
+  } catch {
+    return null
+  }
 }
 
 export function clearAdminSession() {
   localStorage.removeItem(ADMIN_SESSION_KEY)
 }
 
-export function matchSchool(schools, schoolId, inputPassword) {
+export function matchSchool(schools, schoolId, inputPassword, passwords) {
   const school = schools.find((s) => s.id === schoolId)
   if (!school || !inputPassword) return null
-  if (inputPassword !== school.password) return null
+  if (inputPassword !== passwords?.[schoolId]) return null
   return school
-}
-
-export function matchAdminPassword(adminConfig, inputPassword) {
-  if (!adminConfig || !inputPassword) return false
-  return inputPassword === adminConfig.password
 }
 
 export async function signInSuperAdmin(email, password) {

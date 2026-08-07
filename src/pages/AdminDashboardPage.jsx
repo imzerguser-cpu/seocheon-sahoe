@@ -3,7 +3,8 @@ import { clearAdminSession, getAdminSession, signOutSuperAdmin } from '../lib/au
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate()
-  const role = getAdminSession()
+  const session = getAdminSession()
+  const role = session?.role
 
   async function handleSignOut() {
     if (role === 'super-admin') {
@@ -16,10 +17,19 @@ export default function AdminDashboardPage() {
   return (
     <main className="admin-dashboard-page">
       <h1>관리자 대시보드</h1>
+      {role === 'school-admin' && session?.schoolName && (
+        <p className="school-label">
+          {session.schoolName} · {session.teacherName}
+        </p>
+      )}
       <nav className="admin-menu">
         <Link to="/admin/materials">자료 관리</Link>
         <Link to="/admin/quizzes">퀴즈 관리</Link>
-        {role === 'super-admin' && <Link to="/admin/password">학교관리자 비밀번호 변경</Link>}
+        <Link to="/admin/school-passwords">
+          {role === 'super-admin' ? '학교 비밀번호 관리' : '우리 학교 비밀번호'}
+        </Link>
+        {role === 'super-admin' && <Link to="/admin/materials/review">검토 대기 자료</Link>}
+        <Link to="/admin/quizzes/review">검토 대기 퀴즈</Link>
       </nav>
       <button type="button" onClick={handleSignOut}>
         로그아웃

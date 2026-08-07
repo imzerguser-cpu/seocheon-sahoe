@@ -1,14 +1,18 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
 import {
-  fetchQuestions,
+  fetchAllQuestions,
   createQuestion,
   updateQuestion,
+  setQuestionVisibility,
   deleteQuestion,
 } from '../lib/quizzesRepo.js'
+import { normalizeChoice } from '../lib/quizChoices.js'
+import { isSafeUrl } from '../components/ResourceCard.jsx'
 
 const SCOPE_LABELS = { lesson: '차시', topic: '학습주제', unit: '대단원' }
+const TYPE_LABELS = { 'multiple-choice': '객관식', ox: 'OX', 'short-answer': '단답식' }
 
 function refIdFor(scope, { unitId, topicId, lessonId }) {
   if (scope === 'unit') return unitId
@@ -16,18 +20,58 @@ function refIdFor(scope, { unitId, topicId, lessonId }) {
   return lessonId
 }
 
-function QuestionForm({ initial, onSave, onCancel, error }) {
+function sameGroup(a, b) {
+  if (!a || !b) return false
+  if (a.type !== b.type) return false
+  return a.type === 'unit' ? true : a.topicId === b.topicId
+}
+
+function QuestionDetail({ question }) {
+  if (question.type === 'multiple-choice') {
+    return (
+      <ul className="question-detail-choices">
+        {(question.choices ?? []).map(normalizeChoice).map((choice, i) => (
+          <li key={`${choice.text}-${i}`}>
+            {i === question.answerIndex ? '✅' : '⬜'} {choice.text}
+            {choice.imageUrl && (
+              <img src={choice.imageUrl} alt={choice.text} className="choice-thumb" />
+            )}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  return <p className="question-detail-answer">정답: {question.answer}</p>
+}
+
+export function QuestionForm({
+  initial,
+  onSave,
+  onCancel,
+  error,
+  backTo = '/admin',
+  backLabel = '← 관리자 대시보드로',
+  notice,
+}) {
   const [type, setType] = useState(initial?.type ?? 'multiple-choice')
   const [question, setQuestion] = useState(initial?.question ?? '')
-  const [choices, setChoices] = useState(initial?.choices ?? [])
+  const [choices, setChoices] = useState((initial?.choices ?? []).map(normalizeChoice))
   const [choiceInput, setChoiceInput] = useState('')
+  const [choiceImageInput, setChoiceImageInput] = useState('')
+  const [choiceImageError, setChoiceImageError] = useState('')
   const [answerIndex, setAnswerIndex] = useState(initial?.answerIndex ?? 0)
   const [answer, setAnswer] = useState(initial?.answer ?? '')
 
   function addChoice() {
     if (!choiceInput) return
-    setChoices((c) => [...c, choiceInput])
+    if (choiceImageInput && !isSafeUrl(choiceImageInput)) {
+      setChoiceImageError('http:// 또는 https://로 시작하는 링크만 추가할 수 있어요.')
+      return
+    }
+    setChoiceImageError('')
+    setChoices((c) => [...c, { text: choiceInput, imageUrl: choiceImageInput }])
     setChoiceInput('')
+    setChoiceImageInput('')
   }
 
   function removeChoice(index) {
@@ -57,9 +101,10 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
 
   return (
     <main className="quizzes-admin-page">
-      <Link to="/admin" className="back-link">
-        ← 관리자 대시보드로
+      <Link to={backTo} className="back-link">
+        {backLabel}
       </Link>
+      {notice && <p className="approval-notice">{notice}</p>}
       <form onSubmit={handleSubmit} className="question-form">
       <label htmlFor="question-type">문제 유형</label>
       <select id="question-type" value={type} onChange={(e) => setType(e.target.value)}>
@@ -81,8 +126,11 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
           <legend>보기</legend>
           <ul>
             {choices.map((choice, i) => (
-              <li key={`${choice}-${i}`}>
-                <label htmlFor={`answer-${i}`}>정답: {choice}</label>
+              <li key={`${choice.text}-${i}`}>
+                {choice.imageUrl && (
+                  <img src={choice.imageUrl} alt={choice.text} className="choice-thumb" />
+                )}
+                <label htmlFor={`answer-${i}`}>정답: {choice.text}</label>
                 <input
                   id={`answer-${i}`}
                   type="radio"
@@ -103,9 +151,18 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
             value={choiceInput}
             onChange={(e) => setChoiceInput(e.target.value)}
           />
+          <label htmlFor="choice-image-input">보기 이미지 링크 (선택)</label>
+          <input
+            id="choice-image-input"
+            type="text"
+            value={choiceImageInput}
+            onChange={(e) => setChoiceImageInput(e.target.value)}
+            placeholder="사진/유적 등을 보고 고르는 문제라면 링크를 붙여넣으세요"
+          />
           <button type="button" onClick={addChoice}>
             보기 추가
           </button>
+          {choiceImageError && <p role="alert">{choiceImageError}</p>}
         </fieldset>
       )}
 
@@ -168,47 +225,80 @@ export default function QuizzesAdminPage() {
   const lessons = getLessons(publisherId, unitId, topicId)
   const [lessonId, setLessonId] = useState(lessons[0]?.id ?? '')
 
-  const [questions, setQuestions] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [loadError, setLoadError] = useState(false)
   const [mode, setMode] = useState('list')
   const [saveError, setSaveError] = useState('')
-  // Monotonically-increasing token: reload() can be triggered either by the
-  // scope/refId effect below or imperatively from handleSave after a save.
-  // Each call captures the token current at its own start, and only applies
-  // its result if no newer reload() has started in the meantime — this is
-  // what makes a late-arriving response from an abandoned target a no-op.
-  const requestIdRef = useRef(0)
+  const [editingQuestion, setEditingQuestion] = useState(null)
+
+  const [expandedGroup, setExpandedGroup] = useState(null)
+  const [expandedQuestionId, setExpandedQuestionId] = useState(null)
+  const [questions, setQuestions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   const refId = refIdFor(scope, { unitId, topicId, lessonId })
 
   function reload() {
-    if (!refId) {
-      requestIdRef.current += 1
-      setQuestions([])
-      setLoading(false)
-      setLoadError(false)
-      return
-    }
-    const requestId = ++requestIdRef.current
     setLoading(true)
     setLoadError(false)
-    fetchQuestions(scope, refId)
+    fetchAllQuestions()
       .then((list) => {
-        if (requestIdRef.current === requestId) setQuestions(list)
+        setQuestions(list)
+        setLoading(false)
       })
       .catch(() => {
-        if (requestIdRef.current === requestId) setLoadError(true)
-      })
-      .finally(() => {
-        if (requestIdRef.current === requestId) setLoading(false)
+        setLoadError(true)
+        setLoading(false)
       })
   }
 
   useEffect(() => {
     reload()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope, refId])
+  }, [])
+
+  function questionsForTopic(targetUnitId, topicId) {
+    const topicLessons = getLessons(publisherId, targetUnitId, topicId)
+    const lessonIds = new Set(topicLessons.map((l) => l.id))
+    const lessonOrderById = new Map(topicLessons.map((l) => [l.id, l.차시순서]))
+    return questions
+      .filter(
+        (q) =>
+          (q.scope === 'topic' && q.refId === topicId) ||
+          (q.scope === 'lesson' && lessonIds.has(q.refId)),
+      )
+      .map((q) => ({
+        ...q,
+        groupLabel: q.scope === 'topic' ? '학습주제 전체' : `${lessonOrderById.get(q.refId)}차시`,
+      }))
+  }
+
+  // 학습주제(및 그 차시)에서 만든 퀴즈는 자동으로 대단원 전체 퀴즈에도 속한다.
+  function questionsForUnit(targetUnitId) {
+    const unitQuestions = questions
+      .filter((q) => q.scope === 'unit' && q.refId === targetUnitId)
+      .map((q) => ({ ...q, groupLabel: '대단원 전체' }))
+    const rolledUp = getTopics(publisherId, targetUnitId).flatMap((topic) =>
+      questionsForTopic(targetUnitId, topic.id).map((q) => ({
+        ...q,
+        groupLabel: `${topic.title} · ${q.groupLabel}`,
+      })),
+    )
+    return [...unitQuestions, ...rolledUp]
+  }
+
+  function questionsForGroup(group) {
+    if (!group) return []
+    return group.type === 'unit' ? questionsForUnit(unitId) : questionsForTopic(unitId, group.topicId)
+  }
+
+  function toggleGroup(group) {
+    if (sameGroup(expandedGroup, group)) {
+      setExpandedGroup(null)
+      setExpandedQuestionId(null)
+      return
+    }
+    setExpandedGroup(group)
+    setExpandedQuestionId(null)
+  }
 
   async function handleSave(data) {
     setSaveError('')
@@ -216,7 +306,14 @@ export default function QuizzesAdminPage() {
       if (mode === 'create') {
         await createQuestion({ scope, refId, ...data })
       } else if (mode && mode.edit) {
-        await updateQuestion(mode.edit, { scope, refId, ...data })
+        await updateQuestion(mode.edit, {
+          scope: editingQuestion.scope,
+          refId: editingQuestion.refId,
+          visible: editingQuestion.visible !== false,
+          status: editingQuestion.status ?? 'published',
+          submittedBy: editingQuestion.submittedBy ?? null,
+          ...data,
+        })
       }
       setMode('list')
       reload()
@@ -228,6 +325,12 @@ export default function QuizzesAdminPage() {
   async function handleDelete(questionId) {
     if (!window.confirm('이 문제를 삭제할까요? 되돌릴 수 없어요.')) return
     await deleteQuestion(questionId)
+    reload()
+  }
+
+  async function handleToggleVisible(question) {
+    const isCurrentlyVisible = question.visible !== false
+    await setQuestionVisibility(question.id, !isCurrentlyVisible)
     reload()
   }
 
@@ -244,10 +347,9 @@ export default function QuizzesAdminPage() {
     )
   }
   if (mode && mode.edit) {
-    const editing = questions.find((q) => q.id === mode.edit)
     return (
       <QuestionForm
-        initial={editing}
+        initial={editingQuestion}
         onSave={handleSave}
         onCancel={() => {
           setSaveError('')
@@ -287,6 +389,8 @@ export default function QuizzesAdminPage() {
           const newTopicId = newTopics[0]?.id ?? ''
           setTopicId(newTopicId)
           setLessonId(getLessons(newPublisherId, newUnitId, newTopicId)[0]?.id ?? '')
+          setExpandedGroup(null)
+          setExpandedQuestionId(null)
         }}
       >
         {publishers.map((p) => (
@@ -306,6 +410,8 @@ export default function QuizzesAdminPage() {
           const newTopicId = newTopics[0]?.id ?? ''
           setTopicId(newTopicId)
           setLessonId(getLessons(publisherId, newUnitId, newTopicId)[0]?.id ?? '')
+          setExpandedGroup(null)
+          setExpandedQuestionId(null)
         }}
       >
         {units.map((u) => (
@@ -348,32 +454,126 @@ export default function QuizzesAdminPage() {
       >
         새 문제 추가
       </button>
+      <p className="field-hint">
+        위에서 고른 범위·대상에 새 문제가 등록돼요. 아래 목록에서는 대단원의 학습주제를
+        눌러 이미 등록된 문제를 아코디언으로 볼 수 있어요.
+      </p>
 
       {loading && <p className="empty-state">불러오는 중...</p>}
-      {!loading && loadError && <p className="empty-state">문제 목록을 불러오지 못했어요.</p>}
-      {!loading && !loadError && questions.length === 0 && (
-        <p className="empty-state">이 범위에는 아직 등록된 문제가 없어요.</p>
+      {!loading && loadError && (
+        <p className="empty-state">문제 목록을 불러오지 못했어요.</p>
       )}
 
-      <ul className="questions-list">
-        {questions.map((q) => (
-          <li key={q.id}>
-            <span>{q.question}</span>
+      {!loading && !loadError && (
+        <ul className="topic-accordion-list">
+          <li className="topic-accordion-item">
             <button
               type="button"
-              onClick={() => {
-                setSaveError('')
-                setMode({ edit: q.id })
-              }}
+              className="topic-accordion-header"
+              aria-expanded={expandedGroup?.type === 'unit'}
+              onClick={() => toggleGroup({ type: 'unit' })}
             >
+              이 대단원 전체 퀴즈 ({questionsForUnit(unitId).length})
+            </button>
+            {expandedGroup?.type === 'unit' && (
+              <QuestionGroup
+                questions={questionsForGroup(expandedGroup)}
+                expandedQuestionId={expandedQuestionId}
+                onToggleQuestion={setExpandedQuestionId}
+                onEdit={(q) => {
+                  setSaveError('')
+                  setEditingQuestion(q)
+                  setMode({ edit: q.id })
+                }}
+                onDelete={handleDelete}
+                onToggleVisible={handleToggleVisible}
+              />
+            )}
+          </li>
+          {topics.map((topic) => (
+            <li key={topic.id} className="topic-accordion-item">
+              <button
+                type="button"
+                className="topic-accordion-header"
+                aria-expanded={sameGroup(expandedGroup, { type: 'topic', topicId: topic.id })}
+                onClick={() => toggleGroup({ type: 'topic', topicId: topic.id })}
+              >
+                {topic.title} ({questionsForTopic(unitId, topic.id).length})
+              </button>
+              {sameGroup(expandedGroup, { type: 'topic', topicId: topic.id }) && (
+                <QuestionGroup
+                  questions={questionsForGroup(expandedGroup)}
+                  expandedQuestionId={expandedQuestionId}
+                  onToggleQuestion={setExpandedQuestionId}
+                  onEdit={(q) => {
+                    setSaveError('')
+                    setEditingQuestion(q)
+                    setMode({ edit: q.id })
+                  }}
+                  onDelete={handleDelete}
+                  onToggleVisible={handleToggleVisible}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  )
+}
+
+function QuestionGroup({
+  questions,
+  expandedQuestionId,
+  onToggleQuestion,
+  onEdit,
+  onDelete,
+  onToggleVisible,
+}) {
+  if (questions.length === 0) {
+    return <p className="empty-state">이 범위에는 아직 등록된 문제가 없어요.</p>
+  }
+  return (
+    <ul className="questions-list">
+      {questions.map((q) => {
+        const isOpen = expandedQuestionId === q.id
+        const isVisible = q.visible !== false
+        const isPending = q.status === 'pending'
+        return (
+          <li key={q.id}>
+            {isPending && <span className="status-badge">검토 대기</span>}
+            <button
+              type="button"
+              className="question-summary"
+              aria-expanded={isOpen}
+              onClick={() => onToggleQuestion(isOpen ? null : q.id)}
+            >
+              [{q.groupLabel} · {TYPE_LABELS[q.type] ?? q.type}] {q.question}
+            </button>
+            {q.submittedBy && (
+              <span className="quiz-submitted-by">
+                제출: {q.submittedBy.schoolName || q.submittedBy.schoolId} ·{' '}
+                {q.submittedBy.studentName}
+              </span>
+            )}
+            {isOpen && <QuestionDetail question={q} />}
+            <label className="quiz-visibility-toggle">
+              <input
+                type="checkbox"
+                checked={isVisible}
+                onChange={() => onToggleVisible(q)}
+              />
+              학생에게 보이기
+            </label>
+            <button type="button" onClick={() => onEdit(q)}>
               수정
             </button>
-            <button type="button" onClick={() => handleDelete(q.id)}>
+            <button type="button" onClick={() => onDelete(q.id)}>
               삭제
             </button>
           </li>
-        ))}
-      </ul>
-    </main>
+        )
+      })}
+    </ul>
   )
 }

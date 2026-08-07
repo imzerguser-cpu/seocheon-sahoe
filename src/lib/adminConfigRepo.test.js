@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { fetchAdminConfig, updateAdminPassword } from './adminConfigRepo.js'
+import { doc, getDoc } from 'firebase/firestore'
+import { fetchAdminConfig } from './adminConfigRepo.js'
 
 vi.mock('../firebase.js', () => ({ db: {} }))
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn((...args) => args),
   getDoc: vi.fn(),
-  setDoc: vi.fn(),
 }))
 
 beforeEach(() => {
@@ -25,14 +24,5 @@ describe('fetchAdminConfig', () => {
     getDoc.mockResolvedValue({ exists: () => false })
     const result = await fetchAdminConfig()
     expect(result).toBeNull()
-  })
-})
-
-describe('updateAdminPassword', () => {
-  it('새 비밀번호로 문서를 덮어쓴다', async () => {
-    setDoc.mockResolvedValue()
-    await updateAdminPassword('1234')
-    expect(doc).toHaveBeenCalledWith({}, 'adminConfig', 'main')
-    expect(setDoc).toHaveBeenCalledWith([{}, 'adminConfig', 'main'], { password: '1234' })
   })
 })

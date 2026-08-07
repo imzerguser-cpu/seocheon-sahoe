@@ -44,10 +44,17 @@ button:disabled {
 /* 로그인 화면 */
 .login-page,
 .admin-login-page {
-  max-width: 420px;
   margin: 48px auto;
   padding: 0 20px;
   text-align: center;
+}
+
+.admin-login-page {
+  max-width: 420px;
+}
+
+.login-page {
+  max-width: 640px;
 }
 
 .login-page form,
@@ -76,6 +83,59 @@ button:disabled {
   text-align: left;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.school-map-field {
+  border: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.school-map-field legend {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.school-map {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}
+
+.school-map-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-lg);
+  border: 1px solid #e6d5bf;
+}
+
+.school-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 9%;
+  aspect-ratio: 2 / 1;
+  min-width: 44px;
+  min-height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.school-hotspot:hover {
+  background: rgba(255, 157, 92, 0.18);
+}
+
+.school-selected-label {
+  text-align: left;
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  margin: 8px 0 0;
 }
 
 .admin-entry-link {
@@ -153,13 +213,98 @@ button:disabled {
   margin-top: 18px;
 }
 
-.materials-list,
-.questions-list {
+.field-hint {
+  color: #a08b73;
+  font-size: 0.8rem;
+  margin: 4px 0 0;
+  max-width: 420px;
+}
+
+.topic-accordion-list {
   list-style: none;
   padding: 0;
   margin: 18px 0;
   display: grid;
   gap: 10px;
+}
+
+.topic-accordion-item {
+  background: white;
+  border: 1px solid #e6d5bf;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.topic-accordion-header {
+  width: 100%;
+  text-align: left;
+  background: white;
+  color: var(--color-text);
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 0;
+}
+
+.topic-accordion-header:hover {
+  background: var(--color-bg);
+}
+
+.topic-accordion-item .materials-list,
+.topic-accordion-item .questions-list {
+  margin: 0;
+  padding: 0 12px 12px;
+}
+
+.materials-list,
+.questions-list,
+.school-password-list {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.school-password-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  background: white;
+  border: 1px solid #e6d5bf;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.school-password-name {
+  flex: 1 1 100%;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.school-password-list label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.school-password-list input {
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e6d5bf;
+  font: inherit;
+  max-width: 160px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .materials-list li,
@@ -173,6 +318,146 @@ button:disabled {
   border: 1px solid #e6d5bf;
   border-radius: var(--radius-md);
   padding: 12px 16px;
+}
+
+.approval-notice,
+.save-notice {
+  background: #fff0dd;
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.publisher-connection-row {
+  border: 1px solid #e6d5bf;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.publisher-connection-name {
+  display: block;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.publisher-connection-empty {
+  color: #a08b73;
+  font-style: italic;
+}
+
+.publisher-connection-refs {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  display: grid;
+  gap: 6px;
+}
+
+.publisher-connection-refs li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+}
+
+.publisher-lesson-picker {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.publisher-lesson-picker-unit {
+  margin-bottom: 6px;
+}
+
+.publisher-lesson-picker ul {
+  list-style: none;
+  padding-left: 12px;
+  margin: 4px 0;
+  display: grid;
+  gap: 4px;
+}
+
+.question-summary {
+  flex: 1 1 100%;
+  text-align: left;
+  background: none;
+  color: var(--color-text);
+  font-weight: 600;
+  padding: 0;
+}
+
+.question-detail-choices {
+  flex: 1 1 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.choice-thumb {
+  max-width: 80px;
+  max-height: 80px;
+  border-radius: var(--radius-md);
+  vertical-align: middle;
+  margin-left: 6px;
+  display: inline-block;
+}
+
+.choice-image {
+  display: block;
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+}
+
+.quiz-submitted-by {
+  color: #a08b73;
+  font-size: 0.85rem;
+  margin: 2px 0 10px;
+}
+
+.question-detail-answer {
+  flex: 1 1 100%;
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.quiz-visibility-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600 !important;
+  font-size: 0.85rem;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+}
+
+.quiz-visibility-toggle input {
+  width: auto !important;
+  margin: 0;
 }
 
 .materials-list li span,
@@ -265,6 +550,7 @@ button:disabled {
 
 .login-page select,
 .login-page input,
+.admin-login-page select,
 .admin-login-page input {
   padding: 10px;
   border-radius: var(--radius-md);
@@ -354,6 +640,11 @@ button:disabled {
   font-weight: 600;
 }
 
+.topic-materials-count {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
 /* 차시 상세 페이지 */
 .lesson-detail-page {
   text-align: center;
@@ -434,6 +725,22 @@ button:disabled {
   border: none;
   border-radius: var(--radius-md);
   display: block;
+}
+
+.teacher-usage-note {
+  background: #fff0dd;
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.usage-file-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .quiz-links {

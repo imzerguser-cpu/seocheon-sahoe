@@ -46,18 +46,30 @@ describe('AdminDashboardPage', () => {
     )
   })
 
-  it('학교관리자로 로그인하면 비밀번호 변경 링크가 안 보인다', () => {
+  it('학교관리자·전체관리자 모두 "검토 대기 퀴즈" 링크를 볼 수 있다', () => {
     saveAdminSession('school-admin')
     renderPage()
-    expect(screen.queryByRole('link', { name: '학교관리자 비밀번호 변경' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '검토 대기 퀴즈' })).toHaveAttribute(
+      'href',
+      '/admin/quizzes/review',
+    )
   })
 
-  it('전체관리자로 로그인하면 비밀번호 변경 링크가 보인다', () => {
+  it('학교관리자로 로그인하면 "우리 학교 비밀번호" 링크가 보인다', () => {
+    saveAdminSession('school-admin')
+    renderPage()
+    expect(screen.getByRole('link', { name: '우리 학교 비밀번호' })).toHaveAttribute(
+      'href',
+      '/admin/school-passwords',
+    )
+  })
+
+  it('전체관리자로 로그인하면 "학교 비밀번호 관리" 링크가 보인다', () => {
     saveAdminSession('super-admin')
     renderPage()
-    expect(screen.getByRole('link', { name: '학교관리자 비밀번호 변경' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '학교 비밀번호 관리' })).toHaveAttribute(
       'href',
-      '/admin/password',
+      '/admin/school-passwords',
     )
   })
 

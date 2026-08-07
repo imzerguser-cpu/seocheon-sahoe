@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchAdminConfig } from '../lib/adminConfigRepo.js'
-import { matchAdminPassword, saveAdminSession, signInSuperAdmin } from '../lib/auth.js'
+import { fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
+import { saveAdminSession, signInSuperAdmin } from '../lib/auth.js'
+import { fullSchoolName } from '../lib/schoolNames.js'
+import schools from '../data/schools.json'
 
 export default function AdminLoginPage() {
   const [tab, setTab] = useState('school')
+  const [schoolId, setSchoolId] = useState(schools[0]?.id ?? '')
+  const [teacherName, setTeacherName] = useState('')
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
@@ -22,13 +26,19 @@ export default function AdminLoginPage() {
     e.preventDefault()
     setError('')
     setSubmitting(true)
-    const adminConfig = await fetchAdminConfig()
+    const adminPasswords = await fetchSchoolAdminPasswords()
     setSubmitting(false)
-    if (!matchAdminPassword(adminConfig, password)) {
+    if (!password || password !== adminPasswords[schoolId]) {
       setError('비밀번호가 올바르지 않아요. 다시 확인해 주세요.')
       return
     }
-    saveAdminSession('school-admin')
+    const school = schools.find((s) => s.id === schoolId)
+    saveAdminSession({
+      role: 'school-admin',
+      schoolId,
+      schoolName: school ? fullSchoolName(school) : schoolId,
+      teacherName,
+    })
     navigate('/admin')
   }
 
@@ -42,7 +52,7 @@ export default function AdminLoginPage() {
       setError('로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요.')
       return
     }
-    saveAdminSession('super-admin')
+    saveAdminSession({ role: 'super-admin' })
     navigate('/admin')
   }
 
@@ -68,6 +78,21 @@ export default function AdminLoginPage() {
 
       {tab === 'school' && (
         <form onSubmit={handleSchoolSubmit}>
+          <label htmlFor="admin-school">학교</label>
+          <select id="admin-school" value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
+            {schools.map((school) => (
+              <option key={school.id} value={school.id}>
+                {fullSchoolName(school)}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="admin-teacher-name">담당자 이름</label>
+          <input
+            id="admin-teacher-name"
+            type="text"
+            value={teacherName}
+            onChange={(e) => setTeacherName(e.target.value)}
+          />
           <label htmlFor="admin-password">비밀번호</label>
           <input
             id="admin-password"

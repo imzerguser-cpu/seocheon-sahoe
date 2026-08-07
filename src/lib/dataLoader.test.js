@@ -10,6 +10,9 @@ import {
   getUnits,
   getTopics,
   getLessons,
+  getTopic,
+  getLesson,
+  findMatchingLessonsAcrossPublishers,
 } from './dataLoader.js'
 
 const sampleCurriculum = {
@@ -110,5 +113,53 @@ describe('실제 데이터에 바인딩된 함수', () => {
     const lessons = getLessons('ecrimedia', 'ecrimedia-u1', 'ecrimedia-u1-t5')
     expect(lessons.map((l) => l.차시순서)).toEqual([1, 2])
     expect(lessons.map((l) => l.전체차시)).toEqual([2, 2])
+  })
+})
+
+describe('findMatchingLessonsAcrossPublishers', () => {
+  it('기준 차시와 같은 대단원 순서·학습주제 순서를 가진 차시를 다른 모든 출판사에서 찾아 반환한다', () => {
+    const matches = findMatchingLessonsAcrossPublishers(
+      'chunjae-park',
+      'chunjae-park-u1',
+      'chunjae-park-u1-t2',
+      'chunjae-park-u1-t2-l1',
+    )
+
+    expect(matches.length).toBeGreaterThan(0)
+    expect(matches.every((m) => m.publisherId !== 'chunjae-park')).toBe(true)
+
+    const ecrimediaMatch = matches.find((m) => m.publisherId === 'ecrimedia')
+    expect(ecrimediaMatch).toBeDefined()
+    expect(ecrimediaMatch.unitId).toBe('ecrimedia-u1')
+    expect(ecrimediaMatch.topicId).toBe('ecrimedia-u1-t2')
+
+    const matchedTopic = getTopic('ecrimedia', ecrimediaMatch.unitId, ecrimediaMatch.topicId)
+    expect(matchedTopic.order).toBe(2)
+  })
+
+  it('찾은 모든 매칭은 실제로 존재하는 대단원/학습주제/차시를 가리킨다', () => {
+    const matches = findMatchingLessonsAcrossPublishers(
+      'chunjae-park',
+      'chunjae-park-u1',
+      'chunjae-park-u1-t2',
+      'chunjae-park-u1-t2-l1',
+    )
+    expect(matches.length).toBeGreaterThan(0)
+    for (const match of matches) {
+      const topic = getTopic(match.publisherId, match.unitId, match.topicId)
+      const lesson = getLesson(match.publisherId, match.unitId, match.topicId, match.lessonId)
+      expect(topic).not.toBeNull()
+      expect(lesson).not.toBeNull()
+    }
+  })
+
+  it('존재하지 않는 기준 차시를 넣으면 빈 배열을 반환한다', () => {
+    const matches = findMatchingLessonsAcrossPublishers(
+      'chunjae-park',
+      'no-unit',
+      'no-topic',
+      'no-lesson',
+    )
+    expect(matches).toEqual([])
   })
 })
