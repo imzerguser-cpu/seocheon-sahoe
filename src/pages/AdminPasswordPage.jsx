@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { updateAdminPassword } from '../lib/adminConfigRepo.js'
 
 export default function AdminPasswordPage() {
@@ -25,6 +26,9 @@ export default function AdminPasswordPage() {
 
   return (
     <main className="admin-password-page">
+      <Link to="/admin" className="back-link">
+        ← 관리자 대시보드로
+      </Link>
       <h1>학교관리자 비밀번호 변경</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="new-password">새 비밀번호</label>

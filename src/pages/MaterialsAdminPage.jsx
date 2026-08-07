@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
 import {
   fetchAllMaterials,
@@ -302,6 +303,9 @@ export default function MaterialsAdminPage() {
 
   return (
     <main className="materials-admin-page">
+      <Link to="/admin" className="back-link">
+        ← 관리자 대시보드로
+      </Link>
       <h1>자료 관리</h1>
       <button
         type="button"

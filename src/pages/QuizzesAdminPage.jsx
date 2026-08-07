@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
 import {
   fetchQuestions,
@@ -232,6 +233,9 @@ export default function QuizzesAdminPage() {
 
   return (
     <main className="quizzes-admin-page">
+      <Link to="/admin" className="back-link">
+        ← 관리자 대시보드로
+      </Link>
       <h1>퀴즈 관리</h1>
       <label htmlFor="scope-select">범위</label>
       <select id="scope-select" value={scope} onChange={(e) => setScope(e.target.value)}>

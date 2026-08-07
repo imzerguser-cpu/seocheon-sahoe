@@ -1,6 +1,15 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import QuizzesAdminPage from './QuizzesAdminPage.jsx'
+
+function renderPage() {
+  return render(
+    <MemoryRouter>
+      <QuizzesAdminPage />
+    </MemoryRouter>,
+  )
+}
 
 vi.mock('../lib/quizzesRepo.js', () => ({
   fetchQuestions: vi.fn(),
@@ -33,7 +42,7 @@ describe('QuizzesAdminPage', () => {
     fetchQuestions.mockResolvedValue([
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
     ])
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
 
     await waitFor(() =>
@@ -46,7 +55,7 @@ describe('QuizzesAdminPage', () => {
     fetchQuestions.mockResolvedValue([
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
     ])
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
 
@@ -57,7 +66,7 @@ describe('QuizzesAdminPage', () => {
 
   it('문제 목록을 불러오지 못하면 에러 메시지를 보여준다', async () => {
     fetchQuestions.mockRejectedValue(new Error('network error'))
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
 
     await waitFor(() =>
@@ -67,7 +76,7 @@ describe('QuizzesAdminPage', () => {
 
   it('문제 저장이 실패하면 폼이 유지되고 에러 메시지를 보여준다', async () => {
     createQuestion.mockRejectedValue(new Error('write failed'))
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -85,7 +94,7 @@ describe('QuizzesAdminPage', () => {
 
   it('객관식 문제를 만들면 choices와 answerIndex를 담아 createQuestion을 호출한다', async () => {
     createQuestion.mockResolvedValue('new-id')
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -113,7 +122,7 @@ describe('QuizzesAdminPage', () => {
 
   it('OX 문제를 만들면 answer:"O"|"X"로 createQuestion을 호출한다', async () => {
     createQuestion.mockResolvedValue('new-id')
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -136,7 +145,7 @@ describe('QuizzesAdminPage', () => {
 
   it('단답식 문제를 만들면 answer 텍스트로 createQuestion을 호출한다', async () => {
     createQuestion.mockResolvedValue('new-id')
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -158,7 +167,7 @@ describe('QuizzesAdminPage', () => {
   })
 
   it('문제 텍스트가 비어있으면 저장 버튼이 비활성화되고, 입력하면 활성화된다', async () => {
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -172,7 +181,7 @@ describe('QuizzesAdminPage', () => {
   })
 
   it('OX 문제는 O/X를 고르지 않으면 저장 버튼이 비활성화된다', async () => {
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -186,7 +195,7 @@ describe('QuizzesAdminPage', () => {
   })
 
   it('객관식 문제는 보기가 2개 미만이면 저장 버튼이 비활성화된다', async () => {
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
@@ -208,7 +217,7 @@ describe('QuizzesAdminPage', () => {
     fetchQuestions.mockResolvedValue([
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
     ])
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
 
@@ -235,7 +244,7 @@ describe('QuizzesAdminPage', () => {
       .mockResolvedValueOnce([sampleQuestion])
       .mockResolvedValueOnce([])
     deleteQuestion.mockResolvedValue()
-    render(<QuizzesAdminPage />)
+    renderPage()
     selectTarget()
     await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
 
