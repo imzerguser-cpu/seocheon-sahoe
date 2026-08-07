@@ -6,6 +6,7 @@ import {
   updateMaterial,
   deleteMaterial,
 } from '../lib/materialsRepo.js'
+import { isSafeUrl } from '../components/ResourceCard.jsx'
 
 const RESOURCE_TYPE_LABELS = { photo: '사진', video: '영상', qr: 'QR' }
 const emptyForm = { title: '', usageNote: '', resources: [], lessonRefs: [] }
@@ -33,6 +34,7 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
   const [resourceType, setResourceType] = useState('photo')
   const [resourceTitle, setResourceTitle] = useState('')
   const [resourceUrl, setResourceUrl] = useState('')
+  const [resourceError, setResourceError] = useState('')
 
   const publishers = getPublishers()
   const [publisherId, setPublisherId] = useState(publishers[0]?.id ?? '')
@@ -45,6 +47,11 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
 
   function addResource() {
     if (!resourceUrl) return
+    if (!isSafeUrl(resourceUrl)) {
+      setResourceError('http:// 또는 https://로 시작하는 링크만 추가할 수 있어요.')
+      return
+    }
+    setResourceError('')
     setForm((f) => ({
       ...f,
       resources: [...f.resources, { type: resourceType, title: resourceTitle, url: resourceUrl }],
@@ -133,6 +140,7 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
         <button type="button" onClick={addResource}>
           자료 항목 추가
         </button>
+        {resourceError && <p role="alert">{resourceError}</p>}
       </fieldset>
 
       <fieldset>

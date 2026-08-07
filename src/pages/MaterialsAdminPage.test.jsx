@@ -72,6 +72,21 @@ describe('MaterialsAdminPage', () => {
     expect(screen.getByLabelText('제목')).toHaveValue('')
   })
 
+  it('http(s)로 시작하지 않는 자료 링크는 추가되지 않고 안내 문구를 보여준다', async () => {
+    fetchAllMaterials.mockResolvedValue([])
+    render(<MaterialsAdminPage />)
+    await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
+    fireEvent.change(screen.getByLabelText('자료 링크'), {
+      target: { value: 'javascript:alert(1)' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '자료 항목 추가' }))
+
+    expect(screen.queryByText(/javascript:alert/)).not.toBeInTheDocument()
+    expect(screen.getByText('http:// 또는 https://로 시작하는 링크만 추가할 수 있어요.')).toBeInTheDocument()
+  })
+
   it('제목이 비어있으면 저장 버튼이 비활성화되고, 입력하면 활성화된다', async () => {
     fetchAllMaterials.mockResolvedValue([])
     render(<MaterialsAdminPage />)

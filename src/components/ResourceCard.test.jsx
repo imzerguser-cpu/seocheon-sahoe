@@ -33,4 +33,15 @@ describe('ResourceCard', () => {
     render(<ResourceCard resource={{ type: 'video', title: '영상 자료' }} />)
     expect(screen.getByText('링크 준비 중')).toBeInTheDocument()
   })
+
+  it('javascript: 스킴 URL은 이미지/링크로 렌더링하지 않고 준비 중 문구를 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{ type: 'photo', title: '위험한 자료', url: 'javascript:alert(1)' }}
+      />,
+    )
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.queryByText('자료 열기')).not.toBeInTheDocument()
+    expect(screen.getByText('링크 준비 중')).toBeInTheDocument()
+  })
 })
