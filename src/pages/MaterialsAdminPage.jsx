@@ -28,7 +28,8 @@ function lessonRefLabel(ref) {
 }
 
 function MaterialForm({ initial, onSave, onCancel }) {
-  const [form, setForm] = useState(initial ?? emptyForm)
+  const { id: _id, ...initialWithoutId } = initial ?? emptyForm
+  const [form, setForm] = useState(initialWithoutId)
   const [resourceType, setResourceType] = useState('photo')
   const [resourceTitle, setResourceTitle] = useState('')
   const [resourceUrl, setResourceUrl] = useState('')
@@ -241,7 +242,7 @@ export default function MaterialsAdminPage() {
 
   async function handleDelete(materialId) {
     await deleteMaterial(materialId)
-    setMaterials((prev) => prev.filter((m) => m.id !== materialId))
+    reload()
   }
 
   if (mode === 'create') {

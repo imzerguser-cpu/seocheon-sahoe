@@ -108,7 +108,7 @@ describe('MaterialsAdminPage', () => {
   })
 
   it('삭제 버튼을 누르면 deleteMaterial이 호출되고 목록에서 사라진다', async () => {
-    fetchAllMaterials.mockResolvedValue([sampleMaterial])
+    fetchAllMaterials.mockResolvedValueOnce([sampleMaterial]).mockResolvedValueOnce([])
     deleteMaterial.mockResolvedValue()
     render(<MaterialsAdminPage />)
     await waitFor(() => expect(screen.getByText('장항 신성리 갈대밭')).toBeInTheDocument())
@@ -116,6 +116,24 @@ describe('MaterialsAdminPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '삭제' }))
 
     await waitFor(() => expect(deleteMaterial).toHaveBeenCalledWith('m1'))
-    expect(screen.queryByText('장항 신성리 갈대밭')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('장항 신성리 갈대밭')).not.toBeInTheDocument())
+  })
+
+  it('수정 폼에서 저장하면 id 필드가 제외된 객체로 updateMaterial이 호출된다', async () => {
+    fetchAllMaterials.mockResolvedValue([sampleMaterial])
+    updateMaterial.mockResolvedValue()
+    render(<MaterialsAdminPage />)
+    await waitFor(() => expect(screen.getByText('장항 신성리 갈대밭')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: '수정' }))
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() => expect(updateMaterial).toHaveBeenCalled())
+    expect(updateMaterial).toHaveBeenCalledWith(
+      'm1',
+      expect.not.objectContaining({ id: expect.anything() }),
+    )
+    const calledArg = updateMaterial.mock.calls[0][1]
+    expect('id' in calledArg).toBe(false)
   })
 })
