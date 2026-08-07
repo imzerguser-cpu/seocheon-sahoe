@@ -1,6 +1,4 @@
 import publishersData from '../data/publishers.json'
-import topicsData from '../data/topics.json'
-import mappingsData from '../data/mappings.json'
 import quizzesData from '../data/quizzes.json'
 import { curricula } from '../data/curriculaIndex.js'
 
@@ -31,13 +29,6 @@ export function selectLessons(curriculum, unitId, topicId) {
 
 export function selectLesson(curriculum, unitId, topicId, lessonId) {
   return selectLessons(curriculum, unitId, topicId).find((l) => l.id === lessonId) ?? null
-}
-
-export function selectSeocheonTopicsForLesson(topicList, mappingList, publisherId, lessonId) {
-  const topicIds = mappingList
-    .filter((m) => m.publisherId === publisherId && m.lessonId === lessonId)
-    .map((m) => m.topicId)
-  return topicList.filter((t) => topicIds.includes(t.id))
 }
 
 export function selectQuizQuestions(quizList, scope, refId) {
@@ -84,10 +75,6 @@ export function getLessons(publisherId, unitId, topicId) {
 
 export function getLesson(publisherId, unitId, topicId, lessonId) {
   return selectLesson(curricula[publisherId], unitId, topicId, lessonId)
-}
-
-export function getSeocheonTopicsForLesson(publisherId, lessonId) {
-  return selectSeocheonTopicsForLesson(topicsData, mappingsData, publisherId, lessonId)
 }
 
 export function getQuizQuestions(scope, refId) {

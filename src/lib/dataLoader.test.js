@@ -6,13 +6,11 @@ import {
   selectTopic,
   selectLessons,
   selectLesson,
-  selectSeocheonTopicsForLesson,
   selectQuizQuestions,
   getPublishers,
   getUnits,
   getTopics,
   getLessons,
-  getSeocheonTopicsForLesson,
 } from './dataLoader.js'
 
 const sampleCurriculum = {
@@ -89,27 +87,6 @@ describe('selectLessons / selectLesson', () => {
   })
 })
 
-describe('selectSeocheonTopicsForLesson', () => {
-  const topics = [
-    { id: 't1', 차시제목: '토픽1' },
-    { id: 't2', 차시제목: '토픽2' },
-  ]
-  const mappings = [
-    { topicId: 't1', publisherId: 'pub-a', lessonId: 'l1' },
-    { topicId: 't2', publisherId: 'pub-a', lessonId: 'l1' },
-    { topicId: 't1', publisherId: 'pub-b', lessonId: 'l9' },
-  ]
-
-  it('출판사+차시로 매핑된 서천 자료를 모두 반환한다 (N:M)', () => {
-    const result = selectSeocheonTopicsForLesson(topics, mappings, 'pub-a', 'l1')
-    expect(result.map((t) => t.id)).toEqual(['t1', 't2'])
-  })
-
-  it('매핑이 없으면 빈 배열을 반환한다', () => {
-    expect(selectSeocheonTopicsForLesson(topics, mappings, 'pub-a', 'l404')).toEqual([])
-  })
-})
-
 describe('selectQuizQuestions', () => {
   const quizzes = [
     { id: 'q1', scope: 'lesson', refId: 'l1', parentTopicId: 't1', parentUnitId: 'u1', questions: [{ id: 'q1-a' }] },
@@ -162,10 +139,5 @@ describe('실제 데이터에 바인딩된 함수', () => {
     const lessons = getLessons('ecrimedia', 'ecrimedia-u1', 'ecrimedia-u1-t5')
     expect(lessons.map((l) => l.차시순서)).toEqual([1, 2])
     expect(lessons.map((l) => l.전체차시)).toEqual([2, 2])
-  })
-
-  it('getSeocheonTopicsForLesson은 N:M 매핑을 실제 데이터에서 확인한다', () => {
-    const topics = getSeocheonTopicsForLesson('ecrimedia', 'ecrimedia-u1-t5-l1')
-    expect(topics.map((t) => t.id)).toEqual(['topic_1-1-3'])
   })
 })
