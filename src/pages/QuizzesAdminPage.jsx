@@ -33,8 +33,18 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
     setChoices((c) => c.filter((_, i) => i !== index))
   }
 
+  const hasQuestionText = question.trim().length > 0
+  const canSave = hasQuestionText && (
+    type === 'multiple-choice'
+      ? choices.length >= 2 && answerIndex >= 0 && answerIndex < choices.length
+      : type === 'ox'
+        ? answer === 'O' || answer === 'X'
+        : answer.trim().length > 0
+  )
+
   function handleSubmit(e) {
     e.preventDefault()
+    if (!canSave) return
     if (type === 'multiple-choice') {
       onSave({ type, question, choices, answerIndex })
     } else if (type === 'ox') {
@@ -128,7 +138,9 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
         </>
       )}
 
-      <button type="submit">저장</button>
+      <button type="submit" disabled={!canSave}>
+        저장
+      </button>
       <button type="button" onClick={onCancel}>
         취소
       </button>

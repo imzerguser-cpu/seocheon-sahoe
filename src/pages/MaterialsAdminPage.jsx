@@ -67,8 +67,11 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
     setForm((f) => ({ ...f, lessonRefs: f.lessonRefs.filter((_, i) => i !== index) }))
   }
 
+  const canSave = form.title.trim().length > 0
+
   function handleSubmit(e) {
     e.preventDefault()
+    if (!canSave) return
     onSave(form)
   }
 
@@ -205,7 +208,9 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
         </button>
       </fieldset>
 
-      <button type="submit">저장</button>
+      <button type="submit" disabled={!canSave}>
+        저장
+      </button>
       <button type="button" onClick={onCancel}>
         취소
       </button>

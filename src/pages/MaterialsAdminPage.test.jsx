@@ -72,6 +72,18 @@ describe('MaterialsAdminPage', () => {
     expect(screen.getByLabelText('제목')).toHaveValue('')
   })
 
+  it('제목이 비어있으면 저장 버튼이 비활성화되고, 입력하면 활성화된다', async () => {
+    fetchAllMaterials.mockResolvedValue([])
+    render(<MaterialsAdminPage />)
+    await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: '새 자료' } })
+    expect(screen.getByRole('button', { name: '저장' })).not.toBeDisabled()
+  })
+
   it('제목, 자료 항목, 연결 차시를 입력하고 저장하면 createMaterial이 호출된다', async () => {
     fetchAllMaterials.mockResolvedValue([])
     createMaterial.mockResolvedValue('new-id')

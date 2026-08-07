@@ -157,6 +157,53 @@ describe('QuizzesAdminPage', () => {
     )
   })
 
+  it('문제 텍스트가 비어있으면 저장 버튼이 비활성화되고, 입력하면 활성화된다', async () => {
+    render(<QuizzesAdminPage />)
+    selectTarget()
+    await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
+    fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'short-answer' } })
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('문제'), { target: { value: '질문' } })
+    fireEvent.change(screen.getByLabelText('정답'), { target: { value: '답' } })
+    expect(screen.getByRole('button', { name: '저장' })).not.toBeDisabled()
+  })
+
+  it('OX 문제는 O/X를 고르지 않으면 저장 버튼이 비활성화된다', async () => {
+    render(<QuizzesAdminPage />)
+    selectTarget()
+    await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
+    fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'ox' } })
+    fireEvent.change(screen.getByLabelText('문제'), { target: { value: 'OX 질문' } })
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+    fireEvent.click(screen.getByLabelText('정답: O'))
+    expect(screen.getByRole('button', { name: '저장' })).not.toBeDisabled()
+  })
+
+  it('객관식 문제는 보기가 2개 미만이면 저장 버튼이 비활성화된다', async () => {
+    render(<QuizzesAdminPage />)
+    selectTarget()
+    await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
+    fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'multiple-choice' } })
+    fireEvent.change(screen.getByLabelText('문제'), { target: { value: '질문입니다' } })
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('보기 텍스트'), { target: { value: '보기1' } })
+    fireEvent.click(screen.getByRole('button', { name: '보기 추가' }))
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('보기 텍스트'), { target: { value: '보기2' } })
+    fireEvent.click(screen.getByRole('button', { name: '보기 추가' }))
+    expect(screen.getByRole('button', { name: '저장' })).not.toBeDisabled()
+  })
+
   it('수정 버튼을 누르면 기존 값이 채워진 폼이 보인다', async () => {
     fetchQuestions.mockResolvedValue([
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
