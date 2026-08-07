@@ -153,7 +153,9 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
 export default function QuizzesAdminPage() {
   const [scope, setScope] = useState('lesson')
   const publishers = getPublishers()
-  const [publisherId, setPublisherId] = useState(publishers[0]?.id ?? '')
+  const [publisherId, setPublisherId] = useState(
+    publishers.find((p) => p.id === 'chunjae-park')?.id ?? publishers[0]?.id ?? '',
+  )
   const units = getUnits(publisherId)
   const [unitId, setUnitId] = useState(units[0]?.id ?? '')
   const topics = getTopics(publisherId, unitId)
@@ -271,10 +273,15 @@ export default function QuizzesAdminPage() {
         id="publisher-select"
         value={publisherId}
         onChange={(e) => {
-          setPublisherId(e.target.value)
-          setUnitId('')
-          setTopicId('')
-          setLessonId('')
+          const newPublisherId = e.target.value
+          setPublisherId(newPublisherId)
+          const newUnits = getUnits(newPublisherId)
+          const newUnitId = newUnits[0]?.id ?? ''
+          setUnitId(newUnitId)
+          const newTopics = getTopics(newPublisherId, newUnitId)
+          const newTopicId = newTopics[0]?.id ?? ''
+          setTopicId(newTopicId)
+          setLessonId(getLessons(newPublisherId, newUnitId, newTopicId)[0]?.id ?? '')
         }}
       >
         {publishers.map((p) => (
@@ -288,9 +295,12 @@ export default function QuizzesAdminPage() {
         id="unit-select"
         value={unitId}
         onChange={(e) => {
-          setUnitId(e.target.value)
-          setTopicId('')
-          setLessonId('')
+          const newUnitId = e.target.value
+          setUnitId(newUnitId)
+          const newTopics = getTopics(publisherId, newUnitId)
+          const newTopicId = newTopics[0]?.id ?? ''
+          setTopicId(newTopicId)
+          setLessonId(getLessons(publisherId, newUnitId, newTopicId)[0]?.id ?? '')
         }}
       >
         {units.map((u) => (
@@ -304,8 +314,9 @@ export default function QuizzesAdminPage() {
         id="topic-select"
         value={topicId}
         onChange={(e) => {
-          setTopicId(e.target.value)
-          setLessonId('')
+          const newTopicId = e.target.value
+          setTopicId(newTopicId)
+          setLessonId(getLessons(publisherId, unitId, newTopicId)[0]?.id ?? '')
         }}
       >
         {topics.map((t) => (

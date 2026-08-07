@@ -109,6 +109,21 @@ describe('MaterialsAdminPage', () => {
     expect(screen.getByRole('button', { name: '저장' })).not.toBeDisabled()
   })
 
+  it('출판사를 바꾸면 그 출판사의 대단원/학습주제/차시로 즉시 다시 채워진다', async () => {
+    fetchAllMaterials.mockResolvedValue([])
+    renderPage()
+    await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
+    fireEvent.change(screen.getByLabelText('출판사'), { target: { value: 'chunjae-park' } })
+
+    expect(screen.getByLabelText('대단원')).toHaveValue('chunjae-park-u1')
+    expect(screen.getByLabelText('학습주제')).toHaveValue('chunjae-park-u1-t1')
+    expect(screen.getByLabelText('차시')).toHaveValue('chunjae-park-u1-t1-l1')
+    expect(screen.getByText('1. 우리가 사는 곳')).toBeInTheDocument()
+    expect(screen.getByText('단원 학습 내용 예상하기')).toBeInTheDocument()
+  })
+
   it('제목, 자료 항목, 연결 차시를 입력하고 저장하면 createMaterial이 호출된다', async () => {
     fetchAllMaterials.mockResolvedValue([])
     createMaterial.mockResolvedValue('new-id')

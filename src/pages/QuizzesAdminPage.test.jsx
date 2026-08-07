@@ -52,17 +52,28 @@ describe('QuizzesAdminPage', () => {
     expect(screen.getByText('문제입니다')).toBeInTheDocument()
   })
 
-  it('출판사를 바꿔 refId가 비면 이전 대상의 문제 목록이 즉시 사라진다', async () => {
-    fetchQuestions.mockResolvedValue([
-      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
-    ])
+  it('출판사를 바꾸면 그 출판사의 첫 대단원/학습주제/차시로 즉시 대상이 바뀌어 새로 불러온다', async () => {
+    fetchQuestions.mockImplementation((scope, refId) => {
+      if (refId === 'ecrimedia-u1-t2-l1') {
+        return Promise.resolve([
+          { id: 'q1', scope: 'lesson', refId, type: 'ox', question: '문제입니다', answer: 'O' },
+        ])
+      }
+      return Promise.resolve([])
+    })
     renderPage()
     selectTarget()
     await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
 
     fireEvent.change(screen.getByLabelText('출판사'), { target: { value: 'chunjae-park' } })
 
-    await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
+    expect(screen.getByLabelText('대단원')).toHaveValue('chunjae-park-u1')
+    expect(screen.getByLabelText('학습주제')).toHaveValue('chunjae-park-u1-t1')
+    expect(screen.getByLabelText('차시')).toHaveValue('chunjae-park-u1-t1-l1')
+    await waitFor(() =>
+      expect(fetchQuestions).toHaveBeenCalledWith('lesson', 'chunjae-park-u1-t1-l1'),
+    )
+    expect(screen.queryByText('문제입니다')).not.toBeInTheDocument()
   })
 
   it('대상을 빠르게 바꾸면 이전 대상의 응답이 늦게 도착해도 최신 데이터만 반영한다', async () => {
@@ -305,15 +316,22 @@ describe('QuizzesAdminPage', () => {
       question: '문제입니다',
       answer: 'O',
     }
-    // fetchQuestions fires twice before the delete: once on initial mount
-    // (with the default scope/target) and once more after selectTarget()
-    // settles on the final target. Both must resolve with the question so
-    // it can be found and deleted; only the reload triggered by the delete
-    // itself should come back empty.
-    fetchQuestions
-      .mockResolvedValueOnce([sampleQuestion])
-      .mockResolvedValueOnce([sampleQuestion])
-      .mockResolvedValueOnce([])
+    // The cascading publisher/unit/topic/lesson selects each fetch their own
+    // intermediate target as the form settles, so the exact number of calls
+    // before the final target is reached isn't a stable thing to hardcode.
+    // Instead: the FINAL target (ecrimedia-u1-t2-l1) returns the question on
+    // its first fetch, and empty on any later fetch — which can only happen
+    // if handleDelete genuinely calls reload() again for that same target
+    // after deleting (a regression to local-filter deletion would never
+    // re-fetch it at all).
+    let finalTargetFetchCount = 0
+    fetchQuestions.mockImplementation((scope, refId) => {
+      if (refId === 'ecrimedia-u1-t2-l1') {
+        finalTargetFetchCount += 1
+        return Promise.resolve(finalTargetFetchCount === 1 ? [sampleQuestion] : [])
+      }
+      return Promise.resolve([])
+    })
     deleteQuestion.mockResolvedValue()
     renderPage()
     selectTarget()
@@ -323,16 +341,7 @@ describe('QuizzesAdminPage', () => {
 
     await waitFor(() => expect(deleteQuestion).toHaveBeenCalledWith('q1'))
     await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
-
-    // Guard against a regression to local-filter deletion: with only one
-    // question in the fixture, a synchronous setQuestions(prev => prev
-    // .filter(...)) would also leave the list empty, so the assertions
-    // above alone can't tell reload-based delete apart from local-filter
-    // delete. Asserting a 3rd fetchQuestions call (mount + target-settle
-    // + post-delete reload) only holds if handleDelete actually calls
-    // reload() after deleteQuestion().
-    await waitFor(() => expect(fetchQuestions).toHaveBeenCalledTimes(3))
-    expect(fetchQuestions).toHaveBeenNthCalledWith(3, 'lesson', 'ecrimedia-u1-t2-l1')
+    expect(finalTargetFetchCount).toBeGreaterThanOrEqual(2)
   })
 
   it('삭제 확인 창에서 취소하면 deleteQuestion이 호출되지 않는다', async () => {
