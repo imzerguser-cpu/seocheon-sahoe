@@ -1,10 +1,14 @@
-import { useNavigate } from 'react-router-dom'
-import { clearAdminSession } from '../lib/auth.js'
+import { Link, useNavigate } from 'react-router-dom'
+import { clearAdminSession, getAdminSession, signOutSuperAdmin } from '../lib/auth.js'
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate()
+  const role = getAdminSession()
 
-  function handleSignOut() {
+  async function handleSignOut() {
+    if (role === 'super-admin') {
+      await signOutSuperAdmin()
+    }
     clearAdminSession()
     navigate('/admin/login')
   }
@@ -12,11 +16,11 @@ export default function AdminDashboardPage() {
   return (
     <main className="admin-dashboard-page">
       <h1>관리자 대시보드</h1>
-      <p>
-        학교별 비밀번호는 <code>src/data/schools.json</code>, 관리자 비밀번호는{' '}
-        <code>src/data/adminConfig.json</code> 파일을 직접 수정해서 관리합니다. 교육과정과 서천
-        지역화 자료도 저장소 코드로 직접 관리합니다.
-      </p>
+      <nav className="admin-menu">
+        <Link to="/admin/materials">자료 관리</Link>
+        <Link to="/admin/quizzes">퀴즈 관리</Link>
+        {role === 'super-admin' && <Link to="/admin/password">학교관리자 비밀번호 변경</Link>}
+      </nav>
       <button type="button" onClick={handleSignOut}>
         로그아웃
       </button>
