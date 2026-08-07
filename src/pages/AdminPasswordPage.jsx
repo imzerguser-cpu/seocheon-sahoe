@@ -4,15 +4,23 @@ import { updateAdminPassword } from '../lib/adminConfigRepo.js'
 export default function AdminPasswordPage() {
   const [newPassword, setNewPassword] = useState('')
   const [status, setStatus] = useState('')
+  const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setError('')
+    setStatus('')
     setSubmitting(true)
-    await updateAdminPassword(newPassword)
-    setSubmitting(false)
-    setStatus('학교관리자 비밀번호가 변경되었어요.')
-    setNewPassword('')
+    try {
+      await updateAdminPassword(newPassword)
+      setStatus('학교관리자 비밀번호가 변경되었어요.')
+      setNewPassword('')
+    } catch {
+      setError('비밀번호 변경에 실패했어요. 다시 시도해 주세요.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -31,6 +39,7 @@ export default function AdminPasswordPage() {
         </button>
       </form>
       {status && <p role="status">{status}</p>}
+      {error && <p role="alert">{error}</p>}
     </main>
   )
 }
