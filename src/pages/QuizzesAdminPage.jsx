@@ -15,7 +15,7 @@ function refIdFor(scope, { unitId, topicId, lessonId }) {
   return lessonId
 }
 
-function QuestionForm({ initial, onSave, onCancel }) {
+function QuestionForm({ initial, onSave, onCancel, error }) {
   const [type, setType] = useState(initial?.type ?? 'multiple-choice')
   const [question, setQuestion] = useState(initial?.question ?? '')
   const [choices, setChoices] = useState(initial?.choices ?? [])
@@ -132,6 +132,7 @@ function QuestionForm({ initial, onSave, onCancel }) {
       <button type="button" onClick={onCancel}>
         취소
       </button>
+      {error && <p role="alert">{error}</p>}
     </form>
   )
 }
@@ -148,7 +149,9 @@ export default function QuizzesAdminPage() {
   const [lessonId, setLessonId] = useState(lessons[0]?.id ?? '')
 
   const [questions, setQuestions] = useState([])
+  const [loadError, setLoadError] = useState(false)
   const [mode, setMode] = useState('list')
+  const [saveError, setSaveError] = useState('')
 
   const refId = refIdFor(scope, { unitId, topicId, lessonId })
 
@@ -157,7 +160,10 @@ export default function QuizzesAdminPage() {
       setQuestions([])
       return
     }
-    fetchQuestions(scope, refId).then(setQuestions)
+    setLoadError(false)
+    fetchQuestions(scope, refId)
+      .then(setQuestions)
+      .catch(() => setLoadError(true))
   }
 
   useEffect(() => {
@@ -166,13 +172,18 @@ export default function QuizzesAdminPage() {
   }, [scope, refId])
 
   async function handleSave(data) {
-    if (mode === 'create') {
-      await createQuestion({ scope, refId, ...data })
-    } else if (mode && mode.edit) {
-      await updateQuestion(mode.edit, { scope, refId, ...data })
+    setSaveError('')
+    try {
+      if (mode === 'create') {
+        await createQuestion({ scope, refId, ...data })
+      } else if (mode && mode.edit) {
+        await updateQuestion(mode.edit, { scope, refId, ...data })
+      }
+      setMode('list')
+      reload()
+    } catch {
+      setSaveError('문제 저장에 실패했어요. 다시 시도해 주세요.')
     }
-    setMode('list')
-    reload()
   }
 
   async function handleDelete(questionId) {
@@ -181,11 +192,30 @@ export default function QuizzesAdminPage() {
   }
 
   if (mode === 'create') {
-    return <QuestionForm onSave={handleSave} onCancel={() => setMode('list')} />
+    return (
+      <QuestionForm
+        onSave={handleSave}
+        onCancel={() => {
+          setSaveError('')
+          setMode('list')
+        }}
+        error={saveError}
+      />
+    )
   }
   if (mode && mode.edit) {
     const editing = questions.find((q) => q.id === mode.edit)
-    return <QuestionForm initial={editing} onSave={handleSave} onCancel={() => setMode('list')} />
+    return (
+      <QuestionForm
+        initial={editing}
+        onSave={handleSave}
+        onCancel={() => {
+          setSaveError('')
+          setMode('list')
+        }}
+        error={saveError}
+      />
+    )
   }
 
   return (
@@ -257,15 +287,29 @@ export default function QuizzesAdminPage() {
         ))}
       </select>
 
-      <button type="button" onClick={() => setMode('create')}>
+      <button
+        type="button"
+        onClick={() => {
+          setSaveError('')
+          setMode('create')
+        }}
+      >
         새 문제 추가
       </button>
+
+      {loadError && <p className="empty-state">문제 목록을 불러오지 못했어요.</p>}
 
       <ul className="questions-list">
         {questions.map((q) => (
           <li key={q.id}>
             <span>{q.question}</span>
-            <button type="button" onClick={() => setMode({ edit: q.id })}>
+            <button
+              type="button"
+              onClick={() => {
+                setSaveError('')
+                setMode({ edit: q.id })
+              }}
+            >
               수정
             </button>
             <button type="button" onClick={() => handleDelete(q.id)}>

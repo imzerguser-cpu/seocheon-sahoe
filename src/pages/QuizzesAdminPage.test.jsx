@@ -55,6 +55,34 @@ describe('QuizzesAdminPage', () => {
     await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
   })
 
+  it('문제 목록을 불러오지 못하면 에러 메시지를 보여준다', async () => {
+    fetchQuestions.mockRejectedValue(new Error('network error'))
+    render(<QuizzesAdminPage />)
+    selectTarget()
+
+    await waitFor(() =>
+      expect(screen.getByText('문제 목록을 불러오지 못했어요.')).toBeInTheDocument(),
+    )
+  })
+
+  it('문제 저장이 실패하면 폼이 유지되고 에러 메시지를 보여준다', async () => {
+    createQuestion.mockRejectedValue(new Error('write failed'))
+    render(<QuizzesAdminPage />)
+    selectTarget()
+    await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
+    fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'ox' } })
+    fireEvent.change(screen.getByLabelText('문제'), { target: { value: 'OX 질문' } })
+    fireEvent.click(screen.getByLabelText('정답: O'))
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('저장에 실패했어요'),
+    )
+    expect(screen.getByLabelText('문제')).toHaveValue('OX 질문')
+  })
+
   it('객관식 문제를 만들면 choices와 answerIndex를 담아 createQuestion을 호출한다', async () => {
     createQuestion.mockResolvedValue('new-id')
     render(<QuizzesAdminPage />)

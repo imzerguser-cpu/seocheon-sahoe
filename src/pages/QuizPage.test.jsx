@@ -35,6 +35,15 @@ describe('QuizPage', () => {
     expect(screen.getByText('현재 등록된 문항 수: 0개')).toBeInTheDocument()
   })
 
+  it('문제를 불러오지 못하면 에러 메시지를 보여준다', async () => {
+    fetchQuestions.mockRejectedValue(new Error('network error'))
+    renderPage('/quiz/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() =>
+      expect(screen.getByText('퀴즈를 불러오지 못했어요.')).toBeInTheDocument(),
+    )
+  })
+
   it('알 수 없는 scope는 안내 문구를 보여주고 문제를 불러오지 않는다', () => {
     renderPage('/quiz/garbage/x')
     expect(screen.getByText('알 수 없는 퀴즈 범위예요.')).toBeInTheDocument()

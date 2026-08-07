@@ -99,6 +99,7 @@ export default function QuizPage() {
   const isValidScope = VALID_SCOPES.includes(scope)
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     if (!isValidScope) {
@@ -106,10 +107,16 @@ export default function QuizPage() {
       return
     }
     setLoading(true)
-    fetchQuestions(scope, refId).then((list) => {
-      setQuestions(list)
-      setLoading(false)
-    })
+    setLoadError(false)
+    fetchQuestions(scope, refId)
+      .then((list) => {
+        setQuestions(list)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoadError(true)
+        setLoading(false)
+      })
   }, [scope, refId, isValidScope])
 
   return (
@@ -120,10 +127,13 @@ export default function QuizPage() {
       <h1>퀴즈</h1>
       {!isValidScope && <p className="empty-state">알 수 없는 퀴즈 범위예요.</p>}
       {isValidScope && loading && <p className="empty-state">불러오는 중...</p>}
-      {isValidScope && !loading && questions.length === 0 && (
+      {isValidScope && !loading && loadError && (
+        <p className="empty-state">퀴즈를 불러오지 못했어요.</p>
+      )}
+      {isValidScope && !loading && !loadError && questions.length === 0 && (
         <QuizPlaceholder scope={scope} questionCount={0} />
       )}
-      {isValidScope && !loading && questions.length > 0 && (
+      {isValidScope && !loading && !loadError && questions.length > 0 && (
         <ol className="quiz-question-list">
           {questions.map((question) => (
             <QuizQuestion key={question.id} question={question} />

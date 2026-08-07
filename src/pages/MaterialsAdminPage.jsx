@@ -27,7 +27,7 @@ function lessonRefLabel(ref) {
   return ref.lessonId
 }
 
-function MaterialForm({ initial, onSave, onCancel }) {
+function MaterialForm({ initial, onSave, onCancel, error }) {
   const { id: _id, ...initialWithoutId } = initial ?? emptyForm
   const [form, setForm] = useState(initialWithoutId)
   const [resourceType, setResourceType] = useState('photo')
@@ -209,6 +209,7 @@ function MaterialForm({ initial, onSave, onCancel }) {
       <button type="button" onClick={onCancel}>
         취소
       </button>
+      {error && <p role="alert">{error}</p>}
     </form>
   )
 }
@@ -216,14 +217,22 @@ function MaterialForm({ initial, onSave, onCancel }) {
 export default function MaterialsAdminPage() {
   const [materials, setMaterials] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [mode, setMode] = useState('list')
+  const [saveError, setSaveError] = useState('')
 
   function reload() {
     setLoading(true)
-    fetchAllMaterials().then((list) => {
-      setMaterials(list)
-      setLoading(false)
-    })
+    setLoadError(false)
+    fetchAllMaterials()
+      .then((list) => {
+        setMaterials(list)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoadError(true)
+        setLoading(false)
+      })
   }
 
   useEffect(() => {
@@ -231,13 +240,18 @@ export default function MaterialsAdminPage() {
   }, [])
 
   async function handleSave(form) {
-    if (mode === 'create') {
-      await createMaterial(form)
-    } else if (mode && mode.edit) {
-      await updateMaterial(mode.edit, form)
+    setSaveError('')
+    try {
+      if (mode === 'create') {
+        await createMaterial(form)
+      } else if (mode && mode.edit) {
+        await updateMaterial(mode.edit, form)
+      }
+      setMode('list')
+      reload()
+    } catch {
+      setSaveError('자료 저장에 실패했어요. 다시 시도해 주세요.')
     }
-    setMode('list')
-    reload()
   }
 
   async function handleDelete(materialId) {
@@ -246,28 +260,64 @@ export default function MaterialsAdminPage() {
   }
 
   if (mode === 'create') {
-    return <MaterialForm onSave={handleSave} onCancel={() => setMode('list')} />
+    return (
+      <MaterialForm
+        onSave={handleSave}
+        onCancel={() => {
+          setSaveError('')
+          setMode('list')
+        }}
+        error={saveError}
+      />
+    )
   }
 
   if (mode && mode.edit) {
     const editing = materials.find((m) => m.id === mode.edit)
-    return <MaterialForm initial={editing} onSave={handleSave} onCancel={() => setMode('list')} />
+    return (
+      <MaterialForm
+        initial={editing}
+        onSave={handleSave}
+        onCancel={() => {
+          setSaveError('')
+          setMode('list')
+        }}
+        error={saveError}
+      />
+    )
   }
 
   return (
     <main className="materials-admin-page">
       <h1>자료 관리</h1>
-      <button type="button" onClick={() => setMode('create')}>
+      <button
+        type="button"
+        onClick={() => {
+          setSaveError('')
+          setMode('create')
+        }}
+      >
         새로 만들기
       </button>
       {loading && <p className="empty-state">불러오는 중...</p>}
-      {!loading && materials.length === 0 && <p className="empty-state">아직 등록된 자료가 없어요.</p>}
+      {!loading && loadError && (
+        <p className="empty-state">자료 목록을 불러오지 못했어요.</p>
+      )}
+      {!loading && !loadError && materials.length === 0 && (
+        <p className="empty-state">아직 등록된 자료가 없어요.</p>
+      )}
       <ul className="materials-list">
         {materials.map((material) => (
           <li key={material.id}>
             <span>{material.title}</span>
             <span>연결된 차시 {material.lessonRefs?.length ?? 0}개</span>
-            <button type="button" onClick={() => setMode({ edit: material.id })}>
+            <button
+              type="button"
+              onClick={() => {
+                setSaveError('')
+                setMode({ edit: material.id })
+              }}
+            >
               수정
             </button>
             <button type="button" onClick={() => handleDelete(material.id)}>

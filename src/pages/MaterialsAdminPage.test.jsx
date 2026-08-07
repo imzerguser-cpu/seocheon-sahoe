@@ -37,6 +37,32 @@ describe('MaterialsAdminPage', () => {
     expect(screen.getByText('연결된 차시 1개')).toBeInTheDocument()
   })
 
+  it('자료 목록을 불러오지 못하면 에러 메시지를 보여주고 로딩 상태를 벗어난다', async () => {
+    fetchAllMaterials.mockRejectedValue(new Error('network error'))
+    render(<MaterialsAdminPage />)
+
+    await waitFor(() =>
+      expect(screen.getByText('자료 목록을 불러오지 못했어요.')).toBeInTheDocument(),
+    )
+    expect(screen.queryByText('불러오는 중...')).not.toBeInTheDocument()
+  })
+
+  it('저장이 실패하면 폼이 유지되고 에러 메시지를 보여준다', async () => {
+    fetchAllMaterials.mockResolvedValue([])
+    createMaterial.mockRejectedValue(new Error('write failed'))
+    render(<MaterialsAdminPage />)
+    await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: '새 자료' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('저장에 실패했어요'),
+    )
+    expect(screen.getByLabelText('제목')).toHaveValue('새 자료')
+  })
+
   it('새로 만들기를 누르면 빈 폼이 보인다', async () => {
     fetchAllMaterials.mockResolvedValue([])
     render(<MaterialsAdminPage />)
