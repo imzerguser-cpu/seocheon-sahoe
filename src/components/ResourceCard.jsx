@@ -4,6 +4,7 @@ const TYPE_LABELS = {
   photo: '🖼️ 사진',
   video: '🎬 영상',
   qr: '📱 QR 코드',
+  file: '📄 파일(PDF/HWP)',
 }
 
 export function isSafeUrl(url) {

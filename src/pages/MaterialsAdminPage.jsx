@@ -9,7 +9,7 @@ import {
 } from '../lib/materialsRepo.js'
 import { isSafeUrl } from '../components/ResourceCard.jsx'
 
-const RESOURCE_TYPE_LABELS = { photo: '사진', video: '영상', qr: 'QR' }
+const RESOURCE_TYPE_LABELS = { photo: '사진', video: '영상', qr: 'QR', file: '파일(PDF/HWP)' }
 const emptyForm = { title: '', usageNote: '', resources: [], lessonRefs: [] }
 
 function lessonRefLabel(ref) {
@@ -123,6 +123,7 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
           <option value="photo">사진</option>
           <option value="video">영상</option>
           <option value="qr">QR</option>
+          <option value="file">파일(PDF/HWP)</option>
         </select>
         <label htmlFor="resource-title">자료 제목</label>
         <input

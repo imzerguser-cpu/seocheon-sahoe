@@ -29,6 +29,21 @@ describe('ResourceCard', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
+  it('파일(PDF/HWP) 자료는 QR·이미지 없이 "자료 열기" 링크만 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{ type: 'file', title: '활동지.pdf', url: 'https://drive.google.com/file/d/abc' }}
+      />,
+    )
+    expect(screen.getByText('활동지.pdf')).toBeInTheDocument()
+    expect(screen.getByText('📄 파일(PDF/HWP)')).toBeInTheDocument()
+    expect(screen.getByText('자료 열기')).toHaveAttribute(
+      'href',
+      'https://drive.google.com/file/d/abc',
+    )
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
   it('링크가 없으면 준비 중 문구를 보여준다', () => {
     render(<ResourceCard resource={{ type: 'video', title: '영상 자료' }} />)
     expect(screen.getByText('링크 준비 중')).toBeInTheDocument()

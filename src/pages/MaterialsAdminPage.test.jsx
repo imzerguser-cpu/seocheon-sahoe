@@ -142,6 +142,36 @@ describe('MaterialsAdminPage', () => {
     )
   })
 
+  it('종류를 파일(PDF/HWP)로 선택하면 그 종류로 자료 항목이 추가된다', async () => {
+    fetchAllMaterials.mockResolvedValue([])
+    createMaterial.mockResolvedValue('new-id')
+    renderPage()
+    await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
+
+    fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: '활동지 모음' } })
+
+    fireEvent.change(screen.getByLabelText('종류'), { target: { value: 'file' } })
+    fireEvent.change(screen.getByLabelText('자료 링크'), {
+      target: { value: 'https://drive.google.com/file/d/abc123/view' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '자료 항목 추가' }))
+
+    expect(screen.getByText(/drive\.google\.com/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() =>
+      expect(createMaterial).toHaveBeenCalledWith(
+        expect.objectContaining({
+          resources: [
+            { type: 'file', title: '', url: 'https://drive.google.com/file/d/abc123/view' },
+          ],
+        }),
+      ),
+    )
+  })
+
   it('수정 버튼을 누르면 기존 값이 채워진 폼이 보인다', async () => {
     fetchAllMaterials.mockResolvedValue([sampleMaterial])
     renderPage()
