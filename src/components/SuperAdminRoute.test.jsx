@@ -5,12 +5,12 @@ import SuperAdminRoute from './SuperAdminRoute.jsx'
 import { saveAdminSession } from '../lib/auth.js'
 
 // SuperAdminRoute pulls in ../lib/auth.js, which imports ../firebase.js at module
-// load time. firebase.js calls getAuth(app) eagerly, which throws
-// auth/invalid-api-key without real Firebase env vars. Mock at the Firebase SDK
-// boundary only (matching src/lib/auth.test.js) so getAdminSession/saveAdminSession
-// still run for real against localStorage.
-vi.mock('../firebase.js', () => ({ auth: {} }))
+// load time and calls getAuth(app) lazily inside signInSuperAdmin/signOutSuperAdmin.
+// Mock at the Firebase SDK boundary only (matching src/lib/auth.test.js) so
+// getAdminSession/saveAdminSession still run for real against localStorage.
+vi.mock('../firebase.js', () => ({ app: {} }))
 vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({})),
   signInWithEmailAndPassword: vi.fn(),
   signOut: vi.fn().mockResolvedValue(),
 }))

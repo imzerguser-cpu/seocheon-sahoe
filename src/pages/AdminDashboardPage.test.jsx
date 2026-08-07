@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import AdminDashboardPage from './AdminDashboardPage.jsx'
 
-vi.mock('../firebase.js', () => ({ auth: {} }))
+vi.mock('../firebase.js', () => ({ app: {} }))
 vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({})),
   signInWithEmailAndPassword: vi.fn(),
   signOut: vi.fn().mockResolvedValue(),
 }))

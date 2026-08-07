@@ -1,5 +1,5 @@
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { auth } from '../firebase.js'
+import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { app } from '../firebase.js'
 
 const SESSION_KEY = 'seocheon-sahoe:session'
 const ADMIN_SESSION_KEY = 'seocheon-sahoe:admin-session'
@@ -52,7 +52,7 @@ export function matchAdminPassword(adminConfig, inputPassword) {
 
 export async function signInSuperAdmin(email, password) {
   try {
-    await signInWithEmailAndPassword(auth, email, password)
+    await signInWithEmailAndPassword(getAuth(app), email, password)
     return true
   } catch {
     return false
@@ -60,5 +60,5 @@ export async function signInSuperAdmin(email, password) {
 }
 
 export async function signOutSuperAdmin() {
-  await signOut(auth)
+  await signOut(getAuth(app))
 }

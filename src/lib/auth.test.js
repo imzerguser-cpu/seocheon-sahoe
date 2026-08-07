@@ -13,8 +13,9 @@ import {
   signOutSuperAdmin,
 } from './auth.js'
 
-vi.mock('../firebase.js', () => ({ auth: {} }))
+vi.mock('../firebase.js', () => ({ app: {} }))
 vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({})),
   signInWithEmailAndPassword: vi.fn(),
   signOut: vi.fn(),
 }))
