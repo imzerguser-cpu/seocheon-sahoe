@@ -27,6 +27,7 @@ function renderWithSession() {
           <Route path="/admin/password" element={<div>비밀번호 변경 페이지</div>} />
         </Route>
         <Route path="/admin/login" element={<div>관리자 로그인 페이지</div>} />
+        <Route path="/admin" element={<div>관리자 대시보드 페이지</div>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -39,10 +40,10 @@ describe('SuperAdminRoute', () => {
     expect(screen.getByText('비밀번호 변경 페이지')).toBeInTheDocument()
   })
 
-  it('학교관리자 세션이면 관리자 로그인 페이지로 보낸다', () => {
+  it('학교관리자 세션이면(이미 로그인은 되어 있으므로) 관리자 대시보드로 보낸다', () => {
     saveAdminSession('school-admin')
     renderWithSession()
-    expect(screen.getByText('관리자 로그인 페이지')).toBeInTheDocument()
+    expect(screen.getByText('관리자 대시보드 페이지')).toBeInTheDocument()
   })
 
   it('세션이 없으면 관리자 로그인 페이지로 보낸다', () => {
