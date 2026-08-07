@@ -3,7 +3,7 @@ import {
   doc,
   getDocs,
   addDoc,
-  updateDoc,
+  setDoc,
   deleteDoc,
   query,
   where,
@@ -28,7 +28,7 @@ export async function createQuestion(questionData) {
 }
 
 export async function updateQuestion(questionId, questionData) {
-  await updateDoc(doc(db, COLLECTION, questionId), questionData)
+  await setDoc(doc(db, COLLECTION, questionId), questionData)
 }
 
 export async function deleteQuestion(questionId) {

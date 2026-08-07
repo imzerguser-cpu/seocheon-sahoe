@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
+import { collection, doc, getDocs, addDoc, setDoc, deleteDoc, query, where } from 'firebase/firestore'
 import {
   fetchQuestions,
   createQuestion,
@@ -13,7 +13,7 @@ vi.mock('firebase/firestore', () => ({
   doc: vi.fn((...args) => ({ __doc: args })),
   getDocs: vi.fn(),
   addDoc: vi.fn(),
-  updateDoc: vi.fn(),
+  setDoc: vi.fn(),
   deleteDoc: vi.fn(),
   query: vi.fn((...args) => ({ __query: args })),
   where: vi.fn((...args) => ({ __where: args })),
@@ -59,13 +59,14 @@ describe('createQuestion', () => {
 })
 
 describe('updateQuestion', () => {
-  it('기존 문제를 갱신한다', async () => {
-    updateDoc.mockResolvedValue()
+  it('기존 문제를 전체 교체 방식으로 갱신한다(이전 유형의 남은 필드가 남지 않도록)', async () => {
+    setDoc.mockResolvedValue()
     await updateQuestion('q1', { type: 'ox', question: '바뀐 문제', answer: 'X' })
-    expect(updateDoc).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ question: '바뀐 문제' }),
-    )
+    expect(setDoc).toHaveBeenCalledWith(expect.anything(), {
+      type: 'ox',
+      question: '바뀐 문제',
+      answer: 'X',
+    })
   })
 })
 
