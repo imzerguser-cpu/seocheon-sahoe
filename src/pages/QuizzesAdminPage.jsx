@@ -153,7 +153,10 @@ export default function QuizzesAdminPage() {
   const refId = refIdFor(scope, { unitId, topicId, lessonId })
 
   function reload() {
-    if (!refId) return
+    if (!refId) {
+      setQuestions([])
+      return
+    }
     fetchQuestions(scope, refId).then(setQuestions)
   }
 

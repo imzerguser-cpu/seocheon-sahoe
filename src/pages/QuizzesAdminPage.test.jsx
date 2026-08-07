@@ -42,6 +42,19 @@ describe('QuizzesAdminPage', () => {
     expect(screen.getByText('문제입니다')).toBeInTheDocument()
   })
 
+  it('출판사를 바꿔 refId가 비면 이전 대상의 문제 목록이 즉시 사라진다', async () => {
+    fetchQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', type: 'ox', question: '문제입니다', answer: 'O' },
+    ])
+    render(<QuizzesAdminPage />)
+    selectTarget()
+    await waitFor(() => expect(screen.getByText('문제입니다')).toBeInTheDocument())
+
+    fireEvent.change(screen.getByLabelText('출판사'), { target: { value: 'chunjae-park' } })
+
+    await waitFor(() => expect(screen.queryByText('문제입니다')).not.toBeInTheDocument())
+  })
+
   it('객관식 문제를 만들면 choices와 answerIndex를 담아 createQuestion을 호출한다', async () => {
     createQuestion.mockResolvedValue('new-id')
     render(<QuizzesAdminPage />)
