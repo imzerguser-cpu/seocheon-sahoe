@@ -52,6 +52,16 @@ describe('QuizzesAdminPage', () => {
     expect(screen.getByText('문제입니다')).toBeInTheDocument()
   })
 
+  it('선택한 범위에 문제가 없으면 안내 문구를 보여준다', async () => {
+    fetchQuestions.mockResolvedValue([])
+    renderPage()
+    selectTarget()
+
+    await waitFor(() =>
+      expect(screen.getByText('이 범위에는 아직 등록된 문제가 없어요.')).toBeInTheDocument(),
+    )
+  })
+
   it('출판사를 바꾸면 그 출판사의 첫 대단원/학습주제/차시로 즉시 대상이 바뀌어 새로 불러온다', async () => {
     fetchQuestions.mockImplementation((scope, refId) => {
       if (refId === 'ecrimedia-u1-t2-l1') {
@@ -181,6 +191,7 @@ describe('QuizzesAdminPage', () => {
     await waitFor(() => expect(fetchQuestions).toHaveBeenCalled())
 
     fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
+    expect(screen.getByRole('link', { name: '← 관리자 대시보드로' })).toHaveAttribute('href', '/admin')
     fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'multiple-choice' } })
     fireEvent.change(screen.getByLabelText('문제'), { target: { value: '질문입니다' } })
     fireEvent.change(screen.getByLabelText('보기 텍스트'), { target: { value: '보기1' } })

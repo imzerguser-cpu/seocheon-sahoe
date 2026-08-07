@@ -56,7 +56,11 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="question-form">
+    <main className="quizzes-admin-page">
+      <Link to="/admin" className="back-link">
+        ← 관리자 대시보드로
+      </Link>
+      <form onSubmit={handleSubmit} className="question-form">
       <label htmlFor="question-type">문제 유형</label>
       <select id="question-type" value={type} onChange={(e) => setType(e.target.value)}>
         <option value="multiple-choice">객관식</option>
@@ -146,7 +150,8 @@ function QuestionForm({ initial, onSave, onCancel, error }) {
         취소
       </button>
       {error && <p role="alert">{error}</p>}
-    </form>
+      </form>
+    </main>
   )
 }
 
@@ -346,6 +351,9 @@ export default function QuizzesAdminPage() {
 
       {loading && <p className="empty-state">불러오는 중...</p>}
       {!loading && loadError && <p className="empty-state">문제 목록을 불러오지 못했어요.</p>}
+      {!loading && !loadError && questions.length === 0 && (
+        <p className="empty-state">이 범위에는 아직 등록된 문제가 없어요.</p>
+      )}
 
       <ul className="questions-list">
         {questions.map((q) => (

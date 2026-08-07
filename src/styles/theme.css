@@ -102,6 +102,154 @@ button:disabled {
   color: white;
 }
 
+/* 자료 관리 / 퀴즈 관리 (목록 화면 + 만들기·수정 폼 공용) */
+.materials-admin-page,
+.quizzes-admin-page {
+  text-align: left;
+}
+
+.materials-admin-page h1,
+.quizzes-admin-page h1 {
+  text-align: center;
+}
+
+.materials-admin-page > label,
+.quizzes-admin-page > label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin: 14px 0 4px;
+  color: var(--color-primary-dark);
+}
+
+.materials-admin-page > select,
+.quizzes-admin-page > select {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e6d5bf;
+  font: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.materials-admin-page > button,
+.quizzes-admin-page > button {
+  margin-top: 18px;
+}
+
+.materials-list,
+.questions-list {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.materials-list li,
+.questions-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  background: white;
+  border: 1px solid #e6d5bf;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.materials-list li span,
+.questions-list li span {
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+
+/* 자료/퀴즈 만들기·수정 폼 */
+.material-form,
+.question-form {
+  display: block;
+}
+
+.material-form label,
+.question-form label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin: 14px 0 4px;
+  color: var(--color-primary-dark);
+}
+
+.material-form input,
+.material-form select,
+.material-form textarea,
+.question-form input,
+.question-form select {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e6d5bf;
+  font: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.material-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.material-form fieldset,
+.question-form fieldset {
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 22px 0;
+}
+
+.material-form legend,
+.question-form legend {
+  font-weight: 700;
+  padding: 0 6px;
+  color: var(--color-primary-dark);
+}
+
+.material-form fieldset ul,
+.question-form fieldset ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.material-form fieldset li,
+.question-form fieldset li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.material-form fieldset li span,
+.question-form fieldset li span {
+  flex: 1 1 auto;
+}
+
+.material-form > button,
+.question-form > button {
+  margin-top: 20px;
+  margin-right: 10px;
+}
+
 .login-page select,
 .login-page input,
 .admin-login-page input {

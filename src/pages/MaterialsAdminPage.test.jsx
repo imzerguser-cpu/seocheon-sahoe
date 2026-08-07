@@ -80,6 +80,7 @@ describe('MaterialsAdminPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '새로 만들기' }))
     expect(screen.getByLabelText('제목')).toHaveValue('')
+    expect(screen.getByRole('link', { name: '← 관리자 대시보드로' })).toHaveAttribute('href', '/admin')
   })
 
   it('http(s)로 시작하지 않는 자료 링크는 추가되지 않고 안내 문구를 보여준다', async () => {

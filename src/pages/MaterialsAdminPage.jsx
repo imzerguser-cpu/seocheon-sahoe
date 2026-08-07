@@ -86,7 +86,11 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="material-form">
+    <main className="materials-admin-page">
+      <Link to="/admin" className="back-link">
+        ← 관리자 대시보드로
+      </Link>
+      <form onSubmit={handleSubmit} className="material-form">
       <label htmlFor="material-title">제목</label>
       <input
         id="material-title"
@@ -236,7 +240,8 @@ function MaterialForm({ initial, onSave, onCancel, error }) {
         취소
       </button>
       {error && <p role="alert">{error}</p>}
-    </form>
+      </form>
+    </main>
   )
 }
 
