@@ -177,3 +177,59 @@ export function findMatchingRefsAcrossPublishers(sourcePublisherId, scope, { uni
     })),
   ]
 }
+
+// refId는 항상 "{퍼블리셔id}-..." 형태로 시작하므로, 저장된 매칭 정보 없이도
+// refId만 보고 그 퀴즈를 처음 만든 출판사를 알아낼 수 있다.
+export function inferPublisherIdFromRefId(refId) {
+  if (!refId) return null
+  return getPublishers().find((p) => refId.startsWith(`${p.id}-`))?.id ?? null
+}
+
+function locateUnitIdForTopic(publisherId, topicId) {
+  return getUnits(publisherId).find((u) => getTopics(publisherId, u.id).some((t) => t.id === topicId))?.id ?? null
+}
+
+function locateUnitAndTopicForLesson(publisherId, lessonId) {
+  for (const unit of getUnits(publisherId)) {
+    const topic = getTopics(publisherId, unit.id).find((t) =>
+      getLessons(publisherId, unit.id, t.id).some((l) => l.id === lessonId),
+    )
+    if (topic) return { unitId: unit.id, topicId: topic.id }
+  }
+  return null
+}
+
+/**
+ * 퀴즈가 원래 어느 출판사 교과서 기준으로 저장됐든(refId의 접두어로 판단),
+ * 대상 출판사에서 진도표 순서가 같은 학습주제/차시의 refId로 즉석에서
+ * 변환한다. 퀴즈를 저장할 때 매칭 정보를 미리 계산해 둘 필요가 없어서,
+ * 이미 저장된 퀴즈에도(과거에 만든 것 포함) 똑같이 적용된다.
+ */
+export function resolveRefIdForPublisher(scope, refId, targetPublisherId) {
+  const sourcePublisherId = inferPublisherIdFromRefId(refId)
+  if (!sourcePublisherId || sourcePublisherId === targetPublisherId) return refId
+
+  if (scope === 'unit') {
+    const match = findMatchingUnitsAcrossPublishers(sourcePublisherId, refId).find(
+      (m) => m.publisherId === targetPublisherId,
+    )
+    return match?.unitId ?? null
+  }
+  if (scope === 'topic') {
+    const unitId = locateUnitIdForTopic(sourcePublisherId, refId)
+    if (!unitId) return null
+    const match = findMatchingTopicsAcrossPublishers(sourcePublisherId, unitId, refId).find(
+      (m) => m.publisherId === targetPublisherId,
+    )
+    return match?.topicId ?? null
+  }
+  const located = locateUnitAndTopicForLesson(sourcePublisherId, refId)
+  if (!located) return null
+  const match = findMatchingLessonsAcrossPublishers(
+    sourcePublisherId,
+    located.unitId,
+    located.topicId,
+    refId,
+  ).find((m) => m.publisherId === targetPublisherId)
+  return match?.lessonId ?? null
+}

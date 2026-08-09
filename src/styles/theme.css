@@ -572,6 +572,18 @@ button:disabled {
   margin: 0 0 4px;
 }
 
+.unit-list-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.my-quizzes-link {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* 대단원 아코디언 */
 .unit-accordion {
   display: grid;

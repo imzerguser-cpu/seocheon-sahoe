@@ -1,4 +1,4 @@
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, Link } from 'react-router-dom'
 import { getUnits, getPublishers } from '../lib/dataLoader.js'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import UnitAccordion from '../components/UnitAccordion.jsx'
@@ -23,9 +23,14 @@ export default function UnitListPage() {
           </p>
           <h1>{publisher ? publisher.name : publisherId}</h1>
         </div>
-        <button type="button" onClick={logout}>
-          로그아웃
-        </button>
+        <div className="unit-list-header-actions">
+          <Link to="/my-quizzes" className="my-quizzes-link">
+            내가 만든 퀴즈
+          </Link>
+          <button type="button" onClick={logout}>
+            로그아웃
+          </button>
+        </div>
       </header>
       <UnitAccordion publisherId={publisherId} units={units} />
     </main>

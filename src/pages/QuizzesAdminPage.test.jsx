@@ -2,16 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import QuizzesAdminPage from './QuizzesAdminPage.jsx'
-import { findMatchingRefsAcrossPublishers } from '../lib/dataLoader.js'
-
-// selectTarget()이 고르는 대상(ecrimedia-u1-t2-l1)에 대해 실제로 계산되는
-// 출판사 간 매칭 refs. '새 문제 추가' 테스트들이 createQuestion에 이 값이
-// 그대로 전달되는지 검증한다.
-const expectedLessonRefs = findMatchingRefsAcrossPublishers('ecrimedia', 'lesson', {
-  unitId: 'ecrimedia-u1',
-  topicId: 'ecrimedia-u1-t2',
-  lessonId: 'ecrimedia-u1-t2-l1',
-})
+import { saveAdminSession } from '../lib/auth.js'
 
 function renderPage() {
   return render(
@@ -52,6 +43,7 @@ async function openTargetTopicGroup() {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  localStorage.clear()
   fetchAllQuestions.mockResolvedValue([])
   vi.spyOn(window, 'confirm').mockReturnValue(true)
 })
@@ -320,7 +312,6 @@ describe('QuizzesAdminPage', () => {
       expect(createQuestion).toHaveBeenCalledWith({
         scope: 'lesson',
         refId: 'ecrimedia-u1-t2-l1',
-        refs: expectedLessonRefs,
         type: 'multiple-choice',
         question: '질문입니다',
         choices: [
@@ -386,7 +377,6 @@ describe('QuizzesAdminPage', () => {
       expect(createQuestion).toHaveBeenCalledWith({
         scope: 'lesson',
         refId: 'ecrimedia-u1-t2-l1',
-        refs: expectedLessonRefs,
         type: 'ox',
         question: 'OX 질문',
         answer: 'X',
@@ -409,41 +399,11 @@ describe('QuizzesAdminPage', () => {
       expect(createQuestion).toHaveBeenCalledWith({
         scope: 'lesson',
         refId: 'ecrimedia-u1-t2-l1',
-        refs: expectedLessonRefs,
         type: 'short-answer',
         question: '단답 질문',
         answer: '정답텍스트',
       }),
     )
-  })
-
-  it('학습주제(topic) 범위로 문제를 만들면 다른 출판사의 매칭 학습주제까지 포함한 refs로 createQuestion을 호출한다', async () => {
-    createQuestion.mockResolvedValue('new-id')
-    renderPage()
-    selectTarget()
-    fireEvent.change(screen.getByLabelText('범위'), { target: { value: 'topic' } })
-
-    fireEvent.click(screen.getByRole('button', { name: '새 문제 추가' }))
-    fireEvent.change(screen.getByLabelText('문제 유형'), { target: { value: 'ox' } })
-    fireEvent.change(screen.getByLabelText('문제'), { target: { value: '학습주제 문제' } })
-    fireEvent.click(screen.getByLabelText('정답: O'))
-    fireEvent.click(screen.getByRole('button', { name: '저장' }))
-
-    const expectedTopicRefs = findMatchingRefsAcrossPublishers('ecrimedia', 'topic', {
-      unitId: 'ecrimedia-u1',
-      topicId: 'ecrimedia-u1-t2',
-    })
-    await waitFor(() =>
-      expect(createQuestion).toHaveBeenCalledWith({
-        scope: 'topic',
-        refId: 'ecrimedia-u1-t2',
-        refs: expectedTopicRefs,
-        type: 'ox',
-        question: '학습주제 문제',
-        answer: 'O',
-      }),
-    )
-    expect(expectedTopicRefs.find((r) => r.publisherId !== 'ecrimedia')).toBeDefined()
   })
 
   it('문제 텍스트가 비어있으면 저장 버튼이 비활성화되고, 입력하면 활성화된다', async () => {
@@ -562,5 +522,17 @@ describe('QuizzesAdminPage', () => {
 
     expect(deleteQuestion).not.toHaveBeenCalled()
     expect(screen.getByText(/문제입니다/)).toBeInTheDocument()
+  })
+
+  it('학교관리자로 로그인하면 출판사 선택이 소속 학교가 쓰는 출판사로 기본 설정된다', async () => {
+    saveAdminSession({
+      role: 'school-admin',
+      schoolId: 'jangang-cho',
+      schoolName: '장항초등학교',
+      teacherName: '김선생',
+    })
+    renderPage()
+    // schools.json: jangang-cho → ecrimedia
+    await waitFor(() => expect(screen.getByLabelText('출판사')).toHaveValue('ecrimedia'))
   })
 })

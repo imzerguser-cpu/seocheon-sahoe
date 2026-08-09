@@ -436,4 +436,17 @@ describe('MaterialsAdminPage (학교관리자로 로그인)', () => {
     await waitFor(() => expect(updateMaterial).toHaveBeenCalledWith('m1', expect.anything()))
     expect(proposeMaterialEdit).not.toHaveBeenCalled()
   })
+
+  it('학교관리자로 로그인하면 출판사 선택이 소속 학교가 쓰는 출판사로 기본 설정된다', async () => {
+    saveAdminSession({
+      role: 'school-admin',
+      schoolId: 'jangang-cho',
+      schoolName: '장항초등학교',
+      teacherName: '김선생',
+    })
+    fetchAllMaterials.mockResolvedValue([])
+    renderPage()
+    // schools.json: jangang-cho → ecrimedia
+    await waitFor(() => expect(screen.getByLabelText('출판사')).toHaveValue('ecrimedia'))
+  })
 })

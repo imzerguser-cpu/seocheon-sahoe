@@ -17,6 +17,7 @@ import {
 } from '../lib/materialsRepo.js'
 import { isSafeUrl } from '../components/ResourceCard.jsx'
 import { getAdminSession } from '../lib/auth.js'
+import { defaultPublisherId } from '../lib/adminPublisher.js'
 
 const RESOURCE_TYPE_LABELS = { photo: '사진', video: '영상', qr: 'QR', file: '파일(PDF/HWP)' }
 const emptyForm = { usageNote: '', usageFileUrl: '', resources: [], lessonRefs: [] }
@@ -117,8 +118,8 @@ export function MaterialForm({ initial, onSave, onCancel, error, willRequireAppr
   const [browsingPublisherId, setBrowsingPublisherId] = useState(null)
 
   const publishers = getPublishers()
-  const [publisherId, setPublisherId] = useState(
-    publishers.find((p) => p.id === 'chunjae-park')?.id ?? publishers[0]?.id ?? '',
+  const [publisherId, setPublisherId] = useState(() =>
+    defaultPublisherId(publishers, 'chunjae-park'),
   )
   const units = getUnits(publisherId)
   const [unitId, setUnitId] = useState(units[0]?.id ?? '')
@@ -414,8 +415,8 @@ export default function MaterialsAdminPage() {
       }
 
   const publishers = getPublishers()
-  const [browsePublisherId, setBrowsePublisherId] = useState(
-    publishers.find((p) => p.id === 'chunjae-park')?.id ?? publishers[0]?.id ?? '',
+  const [browsePublisherId, setBrowsePublisherId] = useState(() =>
+    defaultPublisherId(publishers, 'chunjae-park'),
   )
   const browseUnits = getUnits(browsePublisherId)
   const [browseUnitId, setBrowseUnitId] = useState(browseUnits[0]?.id ?? '')

@@ -1,4 +1,4 @@
-import { getTopics, getLessons } from './dataLoader.js'
+import { getTopics, getLessons, resolveRefIdForPublisher } from './dataLoader.js'
 
 // A quiz is visible to students once an admin has published it (status is
 // 'published' or missing, for quizzes created before this field existed) and
@@ -8,15 +8,12 @@ export function isPublishedQuiz(q) {
 }
 
 // A quiz created from one publisher's textbook is auto-linked (by curriculum
-// pacing order, see findMatchingRefsAcrossPublishers) to the same
-// unit/topic/lesson in every other publisher's textbook, recorded on `refs`.
-// This resolves which refId that quiz has for a given publisherId, falling
-// back to the plain refId for quizzes created before `refs` existed.
+// pacing order) to the same unit/topic/lesson in every other publisher's
+// textbook. The match is resolved live from refId's publisher prefix rather
+// than from data stored at creation time, so it applies to every quiz,
+// including ones created before this matching existed.
 export function refIdForPublisher(question, publisherId) {
-  if (question.refs) {
-    return question.refs.find((r) => r.publisherId === publisherId)?.refId ?? null
-  }
-  return question.refId
+  return resolveRefIdForPublisher(question.scope, question.refId, publisherId)
 }
 
 // A topic-scoped (or lesson-scoped, via the topic) quiz automatically counts

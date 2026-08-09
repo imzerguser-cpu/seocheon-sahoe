@@ -45,4 +45,12 @@ describe('UnitListPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '로그아웃' }))
     expect(screen.getByText('로그인 페이지')).toBeInTheDocument()
   })
+
+  it('내가 만든 퀴즈로 가는 링크를 보여준다', () => {
+    renderWithRoute()
+    expect(screen.getByRole('link', { name: '내가 만든 퀴즈' })).toHaveAttribute(
+      'href',
+      '/my-quizzes',
+    )
+  })
 })

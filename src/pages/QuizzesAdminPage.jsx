@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  getPublishers,
-  getUnits,
-  getTopics,
-  getLessons,
-  findMatchingRefsAcrossPublishers,
-} from '../lib/dataLoader.js'
+import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
+import { defaultPublisherId } from '../lib/adminPublisher.js'
 import {
   fetchAllQuestions,
   createQuestion,
@@ -222,8 +217,8 @@ export function QuestionForm({
 export default function QuizzesAdminPage() {
   const [scope, setScope] = useState('lesson')
   const publishers = getPublishers()
-  const [publisherId, setPublisherId] = useState(
-    publishers.find((p) => p.id === 'chunjae-park')?.id ?? publishers[0]?.id ?? '',
+  const [publisherId, setPublisherId] = useState(() =>
+    defaultPublisherId(publishers, 'chunjae-park'),
   )
   const units = getUnits(publisherId)
   const [unitId, setUnitId] = useState(units[0]?.id ?? '')
@@ -316,17 +311,11 @@ export default function QuizzesAdminPage() {
     setSaveError('')
     try {
       if (mode === 'create') {
-        const refs = findMatchingRefsAcrossPublishers(publisherId, scope, {
-          unitId,
-          topicId,
-          lessonId,
-        })
-        await createQuestion({ scope, refId, refs, ...data })
+        await createQuestion({ scope, refId, ...data })
       } else if (mode && mode.edit) {
         await updateQuestion(mode.edit, {
           scope: editingQuestion.scope,
           refId: editingQuestion.refId,
-          refs: editingQuestion.refs ?? [],
           visible: editingQuestion.visible !== false,
           status: editingQuestion.status ?? 'published',
           submittedBy: editingQuestion.submittedBy ?? null,

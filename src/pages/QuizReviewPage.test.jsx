@@ -29,10 +29,6 @@ const songlimSubmission = {
   answer: 'O',
   status: 'pending',
   submittedBy: { schoolId: 'songlim-cho', schoolName: '송림초등학교', studentName: '홍길동', role: 'student' },
-  refs: [
-    { publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t5-l1' },
-    { publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t5-l1' },
-  ],
 }
 
 const jangangSubmission = {
@@ -119,7 +115,6 @@ describe('QuizReviewPage (전체관리자로 로그인)', () => {
         expect.objectContaining({
           scope: 'lesson',
           refId: 'ecrimedia-u1-t5-l1',
-          refs: songlimSubmission.refs,
           question: '송림초 학생 제출 문제',
           submittedBy: songlimSubmission.submittedBy,
         }),

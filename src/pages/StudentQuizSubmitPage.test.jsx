@@ -56,15 +56,13 @@ describe('StudentQuizSubmitPage', () => {
 
     await waitFor(() => expect(createQuestion).toHaveBeenCalled())
     const [questionArg, optionsArg] = createQuestion.mock.calls[0]
-    expect(questionArg).toMatchObject({
+    expect(questionArg).toEqual({
       scope: 'lesson',
       refId: 'ecrimedia-u1-t5-l1',
       type: 'ox',
       question: '학생이 만든 문제',
       answer: 'O',
     })
-    expect(questionArg.refs).toContainEqual({ publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t5-l1' })
-    expect(questionArg.refs.length).toBeGreaterThan(1)
     expect(optionsArg).toEqual({
       status: 'pending',
       submittedBy: {

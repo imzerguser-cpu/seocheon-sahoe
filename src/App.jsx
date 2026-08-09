@@ -16,6 +16,7 @@ import UnitListPage from './pages/UnitListPage.jsx'
 import LessonDetailPage from './pages/LessonDetailPage.jsx'
 import QuizPage from './pages/QuizPage.jsx'
 import StudentQuizSubmitPage from './pages/StudentQuizSubmitPage.jsx'
+import MyQuizzesPage from './pages/MyQuizzesPage.jsx'
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             path="/p/:publisherId/:unitId/:topicId/:lessonId/quiz-submit"
             element={<StudentQuizSubmitPage />}
           />
+          <Route path="/my-quizzes" element={<MyQuizzesPage />} />
         </Route>
 
         <Route element={<AdminRoute />}>

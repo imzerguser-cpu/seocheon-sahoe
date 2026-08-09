@@ -16,6 +16,8 @@ import {
   findMatchingUnitsAcrossPublishers,
   findMatchingTopicsAcrossPublishers,
   findMatchingRefsAcrossPublishers,
+  inferPublisherIdFromRefId,
+  resolveRefIdForPublisher,
 } from './dataLoader.js'
 
 const sampleCurriculum = {
@@ -236,5 +238,55 @@ describe('findMatchingRefsAcrossPublishers', () => {
     expect(
       findMatchingRefsAcrossPublishers('chunjae-park', 'unit', { unitId: 'no-unit' }),
     ).toEqual([])
+  })
+})
+
+describe('inferPublisherIdFromRefId', () => {
+  it('refId의 접두어로 원래 출판사를 알아낸다', () => {
+    expect(inferPublisherIdFromRefId('ecrimedia-u1-t2-l1')).toBe('ecrimedia')
+    expect(inferPublisherIdFromRefId('chunjae-park-u1-t2')).toBe('chunjae-park')
+    expect(inferPublisherIdFromRefId('chunjae-kim-u1')).toBe('chunjae-kim')
+  })
+
+  it('알 수 없는 접두어면 null을 반환한다', () => {
+    expect(inferPublisherIdFromRefId('unknown-u1-t2-l1')).toBeNull()
+    expect(inferPublisherIdFromRefId('')).toBeNull()
+    expect(inferPublisherIdFromRefId(undefined)).toBeNull()
+  })
+})
+
+describe('resolveRefIdForPublisher', () => {
+  it('scope가 lesson이면 refId만 보고(저장된 매칭 정보 없이도) 대상 출판사의 매칭 차시 refId를 반환한다', () => {
+    expect(
+      resolveRefIdForPublisher('lesson', 'ecrimedia-u1-t2-l1', 'chunjae-park'),
+    ).toBe('chunjae-park-u1-t2-l1')
+  })
+
+  it('scope가 topic이면 대상 출판사의 매칭 학습주제 refId를 반환한다', () => {
+    expect(resolveRefIdForPublisher('topic', 'ecrimedia-u1-t2', 'chunjae-park')).toBe(
+      'chunjae-park-u1-t2',
+    )
+  })
+
+  it('scope가 unit이면 대상 출판사의 매칭 대단원 refId를 반환한다', () => {
+    expect(resolveRefIdForPublisher('unit', 'ecrimedia-u1', 'chunjae-park')).toBe('chunjae-park-u1')
+  })
+
+  it('대상 출판사가 원래 출판사와 같으면 refId를 그대로 반환한다', () => {
+    expect(resolveRefIdForPublisher('lesson', 'ecrimedia-u1-t2-l1', 'ecrimedia')).toBe(
+      'ecrimedia-u1-t2-l1',
+    )
+  })
+
+  it('refId에서 출판사를 알아낼 수 없으면(알 수 없는 접두어) refId를 그대로 반환한다', () => {
+    expect(resolveRefIdForPublisher('lesson', 'no-such-refid', 'chunjae-park')).toBe(
+      'no-such-refid',
+    )
+  })
+
+  it('출판사는 알아냈지만 그 안에 해당 refId가 실제로 없으면 null을 반환한다', () => {
+    expect(
+      resolveRefIdForPublisher('lesson', 'ecrimedia-u1-t2-no-such-lesson', 'chunjae-park'),
+    ).toBeNull()
   })
 })
