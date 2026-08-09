@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import schools from '../data/schools.json'
 import { matchSchool } from '../lib/auth.js'
-import { fetchSchoolPasswords } from '../lib/schoolPasswordsRepo.js'
+import { fetchSchoolPasswords, fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
 import { fullSchoolName } from '../lib/schoolNames.js'
 
 // 지도 이미지(1222×864, public/images/seocheon-map.png) 위 각 학교 아이콘의
@@ -44,7 +44,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setSubmitting(true)
-    const passwords = await fetchSchoolPasswords()
+    const passwords = isTeacher ? await fetchSchoolAdminPasswords() : await fetchSchoolPasswords()
     setSubmitting(false)
     const school = matchSchool(schools, schoolId, password, passwords)
     if (!school) {
@@ -112,7 +112,7 @@ export default function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="학교 비밀번호를 입력하세요"
+          placeholder={isTeacher ? '학교관리자 비밀번호를 입력하세요' : '학교 비밀번호를 입력하세요'}
         />
 
         <label className="teacher-checkbox-label" htmlFor="isTeacher">

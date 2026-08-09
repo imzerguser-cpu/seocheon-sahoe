@@ -8,15 +8,19 @@ import schools from '../data/schools.json'
 
 vi.mock('../lib/schoolPasswordsRepo.js', () => ({
   fetchSchoolPasswords: vi.fn(),
+  fetchSchoolAdminPasswords: vi.fn(),
 }))
 
-import { fetchSchoolPasswords } from '../lib/schoolPasswordsRepo.js'
+import { fetchSchoolPasswords, fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
 
 beforeEach(() => {
   localStorage.clear()
   vi.clearAllMocks()
   fetchSchoolPasswords.mockResolvedValue(
     Object.fromEntries(schools.map((s) => [s.id, s.password])),
+  )
+  fetchSchoolAdminPasswords.mockResolvedValue(
+    Object.fromEntries(schools.map((s) => [s.id, `admin-${s.password}`])),
   )
 })
 
@@ -87,14 +91,16 @@ describe('LoginPage', () => {
     })
   })
 
-  it('"저는 선생님이에요" 체크박스를 선택하고 로그인하면 role이 teacher로 저장된다', async () => {
+  it('"저는 선생님이에요" 체크박스를 선택하면 학교관리자 비밀번호로만 로그인되고 role이 teacher로 저장된다', async () => {
     renderLoginPage()
     const firstSchool = schools[0]
 
     fireEvent.click(screen.getByRole('button', { name: fullName(firstSchool) }))
     fireEvent.change(screen.getByLabelText('이름'), { target: { value: '김선생' } })
-    fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: firstSchool.password } })
     fireEvent.click(screen.getByLabelText('저는 선생님이에요'))
+    fireEvent.change(screen.getByLabelText('비밀번호'), {
+      target: { value: `admin-${firstSchool.password}` },
+    })
     fireEvent.click(screen.getByRole('button', { name: '입장하기' }))
 
     await waitFor(() =>
@@ -106,6 +112,22 @@ describe('LoginPage', () => {
         role: 'teacher',
       }),
     )
+    expect(fetchSchoolAdminPasswords).toHaveBeenCalled()
+  })
+
+  it('선생님 체크박스를 선택했을 때 학생 로그인 비밀번호를 입력하면 로그인되지 않는다', async () => {
+    renderLoginPage()
+    const firstSchool = schools[0]
+
+    fireEvent.click(screen.getByRole('button', { name: fullName(firstSchool) }))
+    fireEvent.click(screen.getByLabelText('저는 선생님이에요'))
+    fireEvent.change(screen.getByLabelText('비밀번호'), { target: { value: firstSchool.password } })
+    fireEvent.click(screen.getByRole('button', { name: '입장하기' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('비밀번호가 올바르지 않아요'),
+    )
+    expect(getSession()).toBeNull()
   })
 
   it('틀린 비밀번호를 입력하면 에러 메시지를 보여주고 이동하지 않는다', async () => {

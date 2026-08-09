@@ -13,6 +13,9 @@ import {
   getTopic,
   getLesson,
   findMatchingLessonsAcrossPublishers,
+  findMatchingUnitsAcrossPublishers,
+  findMatchingTopicsAcrossPublishers,
+  findMatchingRefsAcrossPublishers,
 } from './dataLoader.js'
 
 const sampleCurriculum = {
@@ -161,5 +164,77 @@ describe('findMatchingLessonsAcrossPublishers', () => {
       'no-lesson',
     )
     expect(matches).toEqual([])
+  })
+})
+
+describe('findMatchingUnitsAcrossPublishers', () => {
+  it('같은 대단원 순서(order)를 가진 대단원을 다른 모든 출판사에서 찾아 반환한다', () => {
+    const matches = findMatchingUnitsAcrossPublishers('chunjae-park', 'chunjae-park-u1')
+    expect(matches.length).toBeGreaterThan(0)
+    expect(matches.every((m) => m.publisherId !== 'chunjae-park')).toBe(true)
+    const ecrimediaMatch = matches.find((m) => m.publisherId === 'ecrimedia')
+    expect(ecrimediaMatch.unitId).toBe('ecrimedia-u1')
+  })
+
+  it('존재하지 않는 기준 대단원을 넣으면 빈 배열을 반환한다', () => {
+    expect(findMatchingUnitsAcrossPublishers('chunjae-park', 'no-unit')).toEqual([])
+  })
+})
+
+describe('findMatchingTopicsAcrossPublishers', () => {
+  it('같은 대단원 순서·학습주제 순서를 가진 학습주제를 다른 모든 출판사에서 찾아 반환한다', () => {
+    const matches = findMatchingTopicsAcrossPublishers(
+      'chunjae-park',
+      'chunjae-park-u1',
+      'chunjae-park-u1-t2',
+    )
+    expect(matches.length).toBeGreaterThan(0)
+    const ecrimediaMatch = matches.find((m) => m.publisherId === 'ecrimedia')
+    expect(ecrimediaMatch.unitId).toBe('ecrimedia-u1')
+    expect(ecrimediaMatch.topicId).toBe('ecrimedia-u1-t2')
+  })
+
+  it('존재하지 않는 기준 학습주제를 넣으면 빈 배열을 반환한다', () => {
+    expect(
+      findMatchingTopicsAcrossPublishers('chunjae-park', 'chunjae-park-u1', 'no-topic'),
+    ).toEqual([])
+  })
+})
+
+describe('findMatchingRefsAcrossPublishers', () => {
+  it("scope가 'lesson'이면 기준 차시를 포함해 모든 출판사의 refId 목록을 반환한다", () => {
+    const refs = findMatchingRefsAcrossPublishers('chunjae-park', 'lesson', {
+      unitId: 'chunjae-park-u1',
+      topicId: 'chunjae-park-u1-t2',
+      lessonId: 'chunjae-park-u1-t2-l1',
+    })
+    expect(refs).toContainEqual({ publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t2-l1' })
+    const ecrimediaRef = refs.find((r) => r.publisherId === 'ecrimedia')
+    expect(ecrimediaRef.refId).toBe('ecrimedia-u1-t2-l1')
+  })
+
+  it("scope가 'topic'이면 기준 학습주제를 포함해 모든 출판사의 refId 목록을 반환한다", () => {
+    const refs = findMatchingRefsAcrossPublishers('chunjae-park', 'topic', {
+      unitId: 'chunjae-park-u1',
+      topicId: 'chunjae-park-u1-t2',
+    })
+    expect(refs).toContainEqual({ publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t2' })
+    const ecrimediaRef = refs.find((r) => r.publisherId === 'ecrimedia')
+    expect(ecrimediaRef.refId).toBe('ecrimedia-u1-t2')
+  })
+
+  it("scope가 'unit'이면 기준 대단원을 포함해 모든 출판사의 refId 목록을 반환한다", () => {
+    const refs = findMatchingRefsAcrossPublishers('chunjae-park', 'unit', {
+      unitId: 'chunjae-park-u1',
+    })
+    expect(refs).toContainEqual({ publisherId: 'chunjae-park', refId: 'chunjae-park-u1' })
+    const ecrimediaRef = refs.find((r) => r.publisherId === 'ecrimedia')
+    expect(ecrimediaRef.refId).toBe('ecrimedia-u1')
+  })
+
+  it('존재하지 않는 기준을 넣으면 빈 배열을 반환한다', () => {
+    expect(
+      findMatchingRefsAcrossPublishers('chunjae-park', 'unit', { unitId: 'no-unit' }),
+    ).toEqual([])
   })
 })

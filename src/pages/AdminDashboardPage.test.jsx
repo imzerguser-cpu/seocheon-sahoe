@@ -73,6 +73,21 @@ describe('AdminDashboardPage', () => {
     )
   })
 
+  it('전체관리자로 로그인하면 "전체관리자 비밀번호 변경" 링크가 보인다', () => {
+    saveAdminSession('super-admin')
+    renderPage()
+    expect(screen.getByRole('link', { name: '전체관리자 비밀번호 변경' })).toHaveAttribute(
+      'href',
+      '/admin/super-admin-password',
+    )
+  })
+
+  it('학교관리자로 로그인하면 "전체관리자 비밀번호 변경" 링크가 보이지 않는다', () => {
+    saveAdminSession('school-admin')
+    renderPage()
+    expect(screen.queryByRole('link', { name: '전체관리자 비밀번호 변경' })).not.toBeInTheDocument()
+  })
+
   it('로그아웃 버튼을 누르면 세션이 지워지고 로그인 페이지로 이동한다', () => {
     saveAdminSession('school-admin')
     renderPage()

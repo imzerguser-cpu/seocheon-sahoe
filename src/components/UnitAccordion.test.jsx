@@ -30,7 +30,7 @@ describe('UnitAccordion', () => {
     expect(screen.queryByText('장소에 대해 알아볼까요')).not.toBeInTheDocument()
   })
 
-  it('대단원을 클릭하면 학습주제 목록이 차시 수 뱃지와 함께 펼쳐지고, 첫 차시로 링크된다', () => {
+  it('대단원을 클릭하면 학습주제 목록이 교과서 쪽수와 함께 펼쳐지고, 첫 차시로 링크된다', () => {
     render(
       <MemoryRouter>
         <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
@@ -40,9 +40,10 @@ describe('UnitAccordion', () => {
 
     const topicLink = screen.getByText('장소에 대해 알아볼까요').closest('a')
     expect(topicLink).toHaveAttribute('href', '/p/ecrimedia/ecrimedia-u1/ecrimedia-u1-t2/ecrimedia-u1-t2-l1')
+    expect(topicLink).toHaveTextContent('12~14쪽')
 
     const multiLessonTopicLink = screen.getByText('우리가 사는 곳에 있는 여러 장소를 표현해 볼까요').closest('a')
-    expect(multiLessonTopicLink).toHaveTextContent('2차시')
+    expect(multiLessonTopicLink).toHaveTextContent('23~27쪽')
   })
 
   it('다시 클릭하면 학습주제 목록이 접힌다', () => {
@@ -82,7 +83,7 @@ describe('UnitAccordion', () => {
     expect(screen.getByText('2학기')).toBeInTheDocument()
   })
 
-  it('게시된 자료가 연결된 학습주제는 제목 옆에 자료 개수를 (N) 형식으로 보여준다', async () => {
+  it('게시된 자료가 연결된 학습주제는 제목 옆에 "자료(N)"으로 개수를 보여준다', async () => {
     fetchAllMaterials.mockResolvedValue([
       {
         id: 'm1',
@@ -97,9 +98,10 @@ describe('UnitAccordion', () => {
     )
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
-    await waitFor(() => expect(screen.getByText('(1)')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('자료(1)')).toBeInTheDocument())
+    expect(screen.queryByText('퀴즈(1)')).not.toBeInTheDocument()
     const topicLink = screen.getByText('장소에 대해 알아볼까요').closest('a')
-    expect(topicLink).toHaveTextContent('장소에 대해 알아볼까요 (1)')
+    expect(topicLink).toHaveTextContent('장소에 대해 알아볼까요 자료(1)')
   })
 
   it('검토 대기(status:pending) 자료는 학생 화면 개수에 포함되지 않는다', async () => {
@@ -118,10 +120,10 @@ describe('UnitAccordion', () => {
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
     await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
-    expect(screen.queryByText(/\(1\)/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/자료\(\d+\)/)).not.toBeInTheDocument()
   })
 
-  it('연결된 자료가 없는 학습주제에는 괄호 개수를 보여주지 않는다', async () => {
+  it('연결된 자료·퀴즈가 없는 학습주제에는 개수를 보여주지 않는다', async () => {
     render(
       <MemoryRouter>
         <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
@@ -130,10 +132,11 @@ describe('UnitAccordion', () => {
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
     await waitFor(() => expect(fetchAllMaterials).toHaveBeenCalled())
-    expect(screen.queryByText(/\(\d+\)/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/자료\(\d+\)/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/퀴즈\(\d+\)/)).not.toBeInTheDocument()
   })
 
-  it('자료 없이 퀴즈만 있어도(학습주제 범위) 그 개수가 (N)으로 보인다', async () => {
+  it('자료 없이 퀴즈만 있어도(학습주제 범위) "퀴즈(N)"으로 보인다', async () => {
     fetchAllQuestions.mockResolvedValue([
       { id: 'q1', scope: 'topic', refId: 'ecrimedia-u1-t2', question: 'Q' },
     ])
@@ -144,10 +147,11 @@ describe('UnitAccordion', () => {
     )
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
-    await waitFor(() => expect(screen.getByText('(1)')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('퀴즈(1)')).toBeInTheDocument())
+    expect(screen.queryByText('자료(1)')).not.toBeInTheDocument()
   })
 
-  it('자료 없이 퀴즈만 있어도(그 학습주제의 차시 범위) 그 개수가 (N)으로 보인다', async () => {
+  it('자료 없이 퀴즈만 있어도(그 학습주제의 차시 범위) "퀴즈(N)"으로 보인다', async () => {
     fetchAllQuestions.mockResolvedValue([
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', question: 'Q' },
     ])
@@ -158,10 +162,10 @@ describe('UnitAccordion', () => {
     )
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
-    await waitFor(() => expect(screen.getByText('(1)')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('퀴즈(1)')).toBeInTheDocument())
   })
 
-  it('자료 1개와 퀴즈 1개가 함께 있으면 합산해서 (2)로 보인다', async () => {
+  it('자료 1개와 퀴즈 1개가 함께 있으면 "자료(1) 퀴즈(1)"로 각각 따로 보인다', async () => {
     fetchAllMaterials.mockResolvedValue([
       {
         id: 'm1',
@@ -179,7 +183,8 @@ describe('UnitAccordion', () => {
     )
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
-    await waitFor(() => expect(screen.getByText('(2)')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('자료(1)')).toBeInTheDocument())
+    expect(screen.getByText('퀴즈(1)')).toBeInTheDocument()
   })
 
   it('검토 대기(status:pending)나 숨김(visible:false) 퀴즈는 개수에 포함되지 않는다', async () => {
@@ -195,6 +200,34 @@ describe('UnitAccordion', () => {
     fireEvent.click(screen.getByText('1. 우리가 사는 곳'))
 
     await waitFor(() => expect(fetchAllQuestions).toHaveBeenCalled())
-    expect(screen.queryByText(/\(\d+\)/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/퀴즈\(\d+\)/)).not.toBeInTheDocument()
+  })
+
+  it('대단원(및 그 학습주제·차시)에 보이는 퀴즈가 있으면 대단원 헤더 옆에 "대단원 퀴즈 풀기" 링크가 개수와 함께 보인다', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'topic', refId: 'ecrimedia-u1-t2', question: 'Q' },
+    ])
+    render(
+      <MemoryRouter>
+        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
+      </MemoryRouter>,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: '대단원 퀴즈 풀기 (1)' })).toBeInTheDocument(),
+    )
+    expect(screen.getByRole('link', { name: '대단원 퀴즈 풀기 (1)' })).toHaveAttribute(
+      'href',
+      '/quiz/ecrimedia/unit/ecrimedia-u1',
+    )
+  })
+
+  it('대단원에 보이는 퀴즈가 하나도 없으면 "대단원 퀴즈 풀기" 링크를 보여주지 않는다', async () => {
+    render(
+      <MemoryRouter>
+        <UnitAccordion publisherId="ecrimedia" units={[{ id: 'ecrimedia-u1', title: '1. 우리가 사는 곳', order: 1, semester: 1 }]} />
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(fetchAllQuestions).toHaveBeenCalled())
+    expect(screen.queryByText('대단원 퀴즈 풀기')).not.toBeInTheDocument()
   })
 })

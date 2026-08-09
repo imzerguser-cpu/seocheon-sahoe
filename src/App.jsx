@@ -8,6 +8,7 @@ import AdminLoginPage from './pages/AdminLoginPage.jsx'
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 import MaterialsAdminPage from './pages/MaterialsAdminPage.jsx'
 import MaterialReviewPage from './pages/MaterialReviewPage.jsx'
+import SuperAdminPasswordPage from './pages/SuperAdminPasswordPage.jsx'
 import QuizzesAdminPage from './pages/QuizzesAdminPage.jsx'
 import QuizReviewPage from './pages/QuizReviewPage.jsx'
 import SchoolPasswordsPage from './pages/SchoolPasswordsPage.jsx'
@@ -46,6 +47,7 @@ export default function App() {
 
         <Route element={<SuperAdminRoute />}>
           <Route path="/admin/materials/review" element={<MaterialReviewPage />} />
+          <Route path="/admin/super-admin-password" element={<SuperAdminPasswordPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

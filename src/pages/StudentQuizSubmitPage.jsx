@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { createQuestion } from '../lib/quizzesRepo.js'
+import { findMatchingRefsAcrossPublishers } from '../lib/dataLoader.js'
 import { QuestionForm } from './QuizzesAdminPage.jsx'
 
 export default function StudentQuizSubmitPage() {
@@ -16,8 +17,13 @@ export default function StudentQuizSubmitPage() {
   async function handleSave(data) {
     setError('')
     try {
+      const refs = findMatchingRefsAcrossPublishers(publisherId, 'lesson', {
+        unitId,
+        topicId,
+        lessonId,
+      })
       await createQuestion(
-        { scope: 'lesson', refId: lessonId, ...data },
+        { scope: 'lesson', refId: lessonId, refs, ...data },
         {
           status: 'pending',
           submittedBy: {

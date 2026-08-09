@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  reauthenticateWithCredential,
+  updatePassword,
+  EmailAuthProvider,
+} from 'firebase/auth'
 import {
   saveSession,
   getSession,
@@ -10,6 +17,7 @@ import {
   matchSchool,
   signInSuperAdmin,
   signOutSuperAdmin,
+  changeSuperAdminPassword,
 } from './auth.js'
 
 vi.mock('../firebase.js', () => ({ app: {} }))
@@ -17,6 +25,9 @@ vi.mock('firebase/auth', () => ({
   getAuth: vi.fn(() => ({})),
   signInWithEmailAndPassword: vi.fn(),
   signOut: vi.fn(),
+  reauthenticateWithCredential: vi.fn(),
+  updatePassword: vi.fn(),
+  EmailAuthProvider: { credential: vi.fn() },
 }))
 
 beforeEach(() => {
@@ -142,5 +153,43 @@ describe('signOutSuperAdmin', () => {
     signOut.mockResolvedValue()
     await signOutSuperAdmin()
     expect(signOut).toHaveBeenCalledWith({})
+  })
+})
+
+describe('changeSuperAdminPassword', () => {
+  beforeEach(() => {
+    getAuth.mockClear()
+    reauthenticateWithCredential.mockReset()
+    updatePassword.mockReset()
+    EmailAuthProvider.credential.mockReset()
+  })
+
+  it('현재 로그인한 전체관리자 계정으로 재인증한 뒤 새 비밀번호로 바꾼다', async () => {
+    const user = { email: 'admin@example.com' }
+    getAuth.mockReturnValueOnce({ currentUser: user })
+    EmailAuthProvider.credential.mockReturnValue('credential')
+    reauthenticateWithCredential.mockResolvedValue()
+    updatePassword.mockResolvedValue()
+
+    await changeSuperAdminPassword('oldpw', 'newpw')
+
+    expect(EmailAuthProvider.credential).toHaveBeenCalledWith('admin@example.com', 'oldpw')
+    expect(reauthenticateWithCredential).toHaveBeenCalledWith(user, 'credential')
+    expect(updatePassword).toHaveBeenCalledWith(user, 'newpw')
+  })
+
+  it('재인증에 실패하면(현재 비밀번호가 틀리면) 에러가 전파되고 updatePassword는 호출되지 않는다', async () => {
+    const user = { email: 'admin@example.com' }
+    getAuth.mockReturnValueOnce({ currentUser: user })
+    EmailAuthProvider.credential.mockReturnValue('credential')
+    reauthenticateWithCredential.mockRejectedValue(new Error('auth/wrong-password'))
+
+    await expect(changeSuperAdminPassword('oldpw', 'newpw')).rejects.toThrow()
+    expect(updatePassword).not.toHaveBeenCalled()
+  })
+
+  it('로그인한 전체관리자 계정이 없으면 에러를 던진다', async () => {
+    getAuth.mockReturnValueOnce({ currentUser: null })
+    await expect(changeSuperAdminPassword('oldpw', 'newpw')).rejects.toThrow()
   })
 })

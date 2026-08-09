@@ -1,4 +1,11 @@
-import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  reauthenticateWithCredential,
+  updatePassword,
+  EmailAuthProvider,
+} from 'firebase/auth'
 import { app } from '../firebase.js'
 
 const SESSION_KEY = 'seocheon-sahoe:session'
@@ -64,4 +71,12 @@ export async function signInSuperAdmin(email, password) {
 
 export async function signOutSuperAdmin() {
   await signOut(getAuth(app))
+}
+
+export async function changeSuperAdminPassword(currentPassword, newPassword) {
+  const user = getAuth(app).currentUser
+  if (!user) throw new Error('로그인이 필요해요.')
+  const credential = EmailAuthProvider.credential(user.email, currentPassword)
+  await reauthenticateWithCredential(user, credential)
+  await updatePassword(user, newPassword)
 }

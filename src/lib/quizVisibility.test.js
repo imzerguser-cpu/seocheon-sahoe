@@ -48,6 +48,56 @@ describe('selectVisibleQuestionsForScope', () => {
     expect(result.map((q) => q.id).sort()).toEqual(['q-lesson', 'q-topic', 'q-unit'])
   })
 
+  it('다른 출판사 학습주제에서 만든 퀴즈도 refs에 이 출판사 매칭 refId가 있으면 보인다', () => {
+    const all = [
+      {
+        id: 'q1',
+        scope: 'lesson',
+        refId: 'ecrimedia-u1-t2-l1',
+        visible: true,
+        refs: [
+          { publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t2-l1' },
+          { publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t2-l1' },
+        ],
+      },
+    ]
+    expect(
+      selectVisibleQuestionsForScope(all, {
+        publisherId: 'chunjae-park',
+        scope: 'lesson',
+        refId: 'chunjae-park-u1-t2-l1',
+      }),
+    ).toEqual([all[0]])
+    expect(
+      selectVisibleQuestionsForScope(all, {
+        publisherId: 'jihak',
+        scope: 'lesson',
+        refId: 'jihak-u1-t2-l1',
+      }),
+    ).toEqual([])
+  })
+
+  it("unit 롤업에서도 refs를 통한 다른 출판사 매칭이 반영된다", () => {
+    const all = [
+      {
+        id: 'q1',
+        scope: 'topic',
+        refId: 'ecrimedia-u1-t2',
+        visible: true,
+        refs: [
+          { publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t2' },
+          { publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t2' },
+        ],
+      },
+    ]
+    const result = selectVisibleQuestionsForScope(all, {
+      publisherId: 'chunjae-park',
+      scope: 'unit',
+      refId: 'chunjae-park-u1',
+    })
+    expect(result).toEqual([all[0]])
+  })
+
   it('status가 pending인(검토 대기) 퀴즈는 승인 전까지 제외한다', () => {
     const all = [
       { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t2-l1', status: 'pending' },
@@ -86,5 +136,25 @@ describe('selectVisibleQuestionsForTopic', () => {
       topicId: 'ecrimedia-u1-t2',
     })
     expect(result.map((q) => q.id).sort()).toEqual(['q-lesson', 'q-topic'])
+  })
+
+  it('다른 출판사에서 만든 퀴즈도 refs 매칭을 통해 이 학습주제에서 보인다', () => {
+    const all = [
+      {
+        id: 'q-topic',
+        scope: 'topic',
+        refId: 'ecrimedia-u1-t2',
+        refs: [
+          { publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t2' },
+          { publisherId: 'chunjae-park', refId: 'chunjae-park-u1-t2' },
+        ],
+      },
+    ]
+    const result = selectVisibleQuestionsForTopic(all, {
+      publisherId: 'chunjae-park',
+      unitId: 'chunjae-park-u1',
+      topicId: 'chunjae-park-u1-t2',
+    })
+    expect(result).toEqual([all[0]])
   })
 })

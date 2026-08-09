@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { getTopics, getLessons } from '../lib/dataLoader.js'
 import { fetchAllMaterials } from '../lib/materialsRepo.js'
 import { fetchAllQuestions } from '../lib/quizzesRepo.js'
-import { selectVisibleQuestionsForTopic } from '../lib/quizVisibility.js'
+import { selectVisibleQuestionsForScope, selectVisibleQuestionsForTopic } from '../lib/quizVisibility.js'
+import { formatPageRange } from '../lib/pageRange.js'
 
 export default function UnitAccordion({ publisherId, units }) {
   const [openUnitId, setOpenUnitId] = useState(null)
@@ -28,13 +29,13 @@ export default function UnitAccordion({ publisherId, units }) {
     ).length
   }
 
-  function contentCountForTopic(unitId, topicId) {
-    const quizCount = selectVisibleQuestionsForTopic(allQuestions, {
-      publisherId,
-      unitId,
-      topicId,
-    }).length
-    return materialsCountForTopic(unitId, topicId) + quizCount
+  function quizCountForTopic(unitId, topicId) {
+    return selectVisibleQuestionsForTopic(allQuestions, { publisherId, unitId, topicId }).length
+  }
+
+  function quizCountForUnit(unitId) {
+    return selectVisibleQuestionsForScope(allQuestions, { publisherId, scope: 'unit', refId: unitId })
+      .length
   }
 
   if (units.length === 0) {
@@ -48,23 +49,32 @@ export default function UnitAccordion({ publisherId, units }) {
   const renderUnit = (unit) => {
     const isOpen = unit.id === openUnitId
     const topics = isOpen ? getTopics(publisherId, unit.id) : []
+    const unitQuizCount = quizCountForUnit(unit.id)
 
     return (
       <div key={unit.id} className="unit-accordion-item">
-        <button
-          type="button"
-          className="unit-accordion-header"
-          aria-expanded={isOpen}
-          onClick={() => setOpenUnitId(isOpen ? null : unit.id)}
-        >
-          {unit.title}
-        </button>
+        <div className="unit-accordion-header-row">
+          <button
+            type="button"
+            className="unit-accordion-header"
+            aria-expanded={isOpen}
+            onClick={() => setOpenUnitId(isOpen ? null : unit.id)}
+          >
+            {unit.title}
+          </button>
+          {unitQuizCount > 0 && (
+            <Link to={`/quiz/${publisherId}/unit/${unit.id}`} className="unit-quiz-link">
+              대단원 퀴즈 풀기 ({unitQuizCount})
+            </Link>
+          )}
+        </div>
         {isOpen && (
           <ul className="topic-list">
             {topics.map((topic) => {
               const lessons = getLessons(publisherId, unit.id, topic.id)
               const firstLessonId = lessons[0]?.id
-              const contentCount = contentCountForTopic(unit.id, topic.id)
+              const materialsCount = materialsCountForTopic(unit.id, topic.id)
+              const quizCount = quizCountForTopic(unit.id, topic.id)
               return (
                 <li key={topic.id}>
                   <Link
@@ -73,11 +83,14 @@ export default function UnitAccordion({ publisherId, units }) {
                   >
                     <span className="topic-link-title">
                       {topic.title}
-                      {contentCount > 0 && (
-                        <span className="topic-materials-count"> ({contentCount})</span>
+                      {materialsCount > 0 && (
+                        <span className="topic-materials-count"> 자료({materialsCount})</span>
+                      )}
+                      {quizCount > 0 && (
+                        <span className="topic-quiz-count"> 퀴즈({quizCount})</span>
                       )}
                     </span>
-                    <span className="topic-badge">{lessons.length}차시</span>
+                    <span className="topic-badge">{formatPageRange(lessons)}</span>
                   </Link>
                 </li>
               )

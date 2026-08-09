@@ -55,6 +55,7 @@ export default function QuizReviewPage() {
       await publishQuestion(reviewingId, {
         scope: reviewing.scope,
         refId: reviewing.refId,
+        refs: reviewing.refs ?? [],
         submittedBy: reviewing.submittedBy,
         ...form,
       })

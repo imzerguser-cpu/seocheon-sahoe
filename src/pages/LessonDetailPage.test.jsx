@@ -183,7 +183,7 @@ describe('LessonDetailPage', () => {
     await waitFor(() => expect(screen.getByText('자료를 불러오지 못했어요.')).toBeInTheDocument())
   })
 
-  it('문제가 있는 범위의 퀴즈 링크를 보여준다 (학습주제 퀴즈는 대단원 퀴즈로도 롤업된다)', async () => {
+  it('문제가 있는 범위의 퀴즈 링크를 보여준다', async () => {
     fetchAllQuestions.mockResolvedValue([
       { id: 'q1', scope: 'topic', refId: 'ecrimedia-u1-t5', type: 'ox', question: 'Q', answer: 'O' },
     ])
@@ -196,10 +196,7 @@ describe('LessonDetailPage', () => {
       ),
     )
     expect(screen.queryByText('이 차시 퀴즈')).not.toBeInTheDocument()
-    expect(screen.getByText('이 대단원 퀴즈')).toHaveAttribute(
-      'href',
-      '/quiz/ecrimedia/unit/ecrimedia-u1',
-    )
+    expect(screen.queryByText('이 대단원 퀴즈')).not.toBeInTheDocument()
   })
 
   it('숨김(visible:false) 처리된 퀴즈만 있으면 링크를 보여주지 않는다', async () => {
@@ -220,25 +217,14 @@ describe('LessonDetailPage', () => {
     expect(screen.queryByText('이 학습주제 퀴즈')).not.toBeInTheDocument()
   })
 
-  it('대단원 퀴즈 링크는 그 학습주제·차시에 딸린 퀴즈만 있어도 보인다 (롤업)', async () => {
+  it('대단원 퀴즈는 이 페이지가 아니라 대단원 목록(아코디언)에서만 풀 수 있다', async () => {
     fetchAllQuestions.mockResolvedValue([
-      {
-        id: 'q1',
-        scope: 'lesson',
-        refId: 'ecrimedia-u1-t5-l1',
-        type: 'ox',
-        question: 'Q',
-        answer: 'O',
-      },
+      { id: 'q1', scope: 'unit', refId: 'ecrimedia-u1', type: 'ox', question: 'Q', answer: 'O' },
     ])
     renderPage('/p/ecrimedia/ecrimedia-u1/ecrimedia-u1-t5/ecrimedia-u1-t5-l1')
 
-    await waitFor(() =>
-      expect(screen.getByText('이 대단원 퀴즈')).toHaveAttribute(
-        'href',
-        '/quiz/ecrimedia/unit/ecrimedia-u1',
-      ),
-    )
+    await waitFor(() => expect(fetchAllQuestions).toHaveBeenCalled())
+    expect(screen.queryByText('이 대단원 퀴즈')).not.toBeInTheDocument()
   })
 
   it('자료가 없어도 보이는 퀴즈가 있으면 "자료 없음" 대신 퀴즈 안내 문구를 보여준다', async () => {

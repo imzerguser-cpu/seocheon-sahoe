@@ -30,6 +30,9 @@ export default function AdminDashboardPage() {
         </Link>
         {role === 'super-admin' && <Link to="/admin/materials/review">검토 대기 자료</Link>}
         <Link to="/admin/quizzes/review">검토 대기 퀴즈</Link>
+        {role === 'super-admin' && (
+          <Link to="/admin/super-admin-password">전체관리자 비밀번호 변경</Link>
+        )}
       </nav>
       <button type="button" onClick={handleSignOut}>
         로그아웃

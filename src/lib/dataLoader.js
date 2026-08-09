@@ -102,3 +102,78 @@ export function findMatchingLessonsAcrossPublishers(
   }
   return matches
 }
+
+// 기준 대단원과 순서(order)가 같은 대단원을 나머지 모든 출판사에서 찾는다.
+export function findMatchingUnitsAcrossPublishers(sourcePublisherId, sourceUnitId) {
+  const sourceUnit = getUnit(sourcePublisherId, sourceUnitId)
+  if (!sourceUnit) return []
+
+  const matches = []
+  for (const publisher of getPublishers()) {
+    if (publisher.id === sourcePublisherId) continue
+    const matchedUnit = getUnits(publisher.id).find((u) => u.order === sourceUnit.order)
+    if (!matchedUnit) continue
+    matches.push({ publisherId: publisher.id, unitId: matchedUnit.id })
+  }
+  return matches
+}
+
+// 기준 학습주제와 대단원 order·학습주제 order가 같은 학습주제를 나머지 모든
+// 출판사에서 찾는다.
+export function findMatchingTopicsAcrossPublishers(sourcePublisherId, sourceUnitId, sourceTopicId) {
+  const sourceUnit = getUnit(sourcePublisherId, sourceUnitId)
+  const sourceTopic = getTopic(sourcePublisherId, sourceUnitId, sourceTopicId)
+  if (!sourceUnit || !sourceTopic) return []
+
+  const matches = []
+  for (const publisher of getPublishers()) {
+    if (publisher.id === sourcePublisherId) continue
+    const matchedUnit = getUnits(publisher.id).find((u) => u.order === sourceUnit.order)
+    if (!matchedUnit) continue
+    const matchedTopic = getTopics(publisher.id, matchedUnit.id).find(
+      (t) => t.order === sourceTopic.order,
+    )
+    if (!matchedTopic) continue
+    matches.push({ publisherId: publisher.id, unitId: matchedUnit.id, topicId: matchedTopic.id })
+  }
+  return matches
+}
+
+/**
+ * 퀴즈의 scope(lesson/topic/unit)에 맞춰, 기준 출판사를 포함한 모든 출판사의
+ * refId 목록을 반환한다. 학생/교사가 어느 출판사 교과서로 퀴즈를 만들거나 보든
+ * 진도표상 같은 순서의 학습주제·차시라면 같은 퀴즈가 보이도록 하기 위함이다.
+ */
+export function findMatchingRefsAcrossPublishers(sourcePublisherId, scope, { unitId, topicId, lessonId }) {
+  if (scope === 'unit') {
+    const sourceUnit = getUnit(sourcePublisherId, unitId)
+    if (!sourceUnit) return []
+    return [
+      { publisherId: sourcePublisherId, refId: unitId },
+      ...findMatchingUnitsAcrossPublishers(sourcePublisherId, unitId).map((m) => ({
+        publisherId: m.publisherId,
+        refId: m.unitId,
+      })),
+    ]
+  }
+  if (scope === 'topic') {
+    const sourceTopic = getTopic(sourcePublisherId, unitId, topicId)
+    if (!sourceTopic) return []
+    return [
+      { publisherId: sourcePublisherId, refId: topicId },
+      ...findMatchingTopicsAcrossPublishers(sourcePublisherId, unitId, topicId).map((m) => ({
+        publisherId: m.publisherId,
+        refId: m.topicId,
+      })),
+    ]
+  }
+  const sourceLesson = getLesson(sourcePublisherId, unitId, topicId, lessonId)
+  if (!sourceLesson) return []
+  return [
+    { publisherId: sourcePublisherId, refId: lessonId },
+    ...findMatchingLessonsAcrossPublishers(sourcePublisherId, unitId, topicId, lessonId).map((m) => ({
+      publisherId: m.publisherId,
+      refId: m.lessonId,
+    })),
+  ]
+}

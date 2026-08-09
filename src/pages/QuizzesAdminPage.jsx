@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getPublishers, getUnits, getTopics, getLessons } from '../lib/dataLoader.js'
+import {
+  getPublishers,
+  getUnits,
+  getTopics,
+  getLessons,
+  findMatchingRefsAcrossPublishers,
+} from '../lib/dataLoader.js'
 import {
   fetchAllQuestions,
   createQuestion,
@@ -10,6 +16,7 @@ import {
 } from '../lib/quizzesRepo.js'
 import { normalizeChoice } from '../lib/quizChoices.js'
 import { isSafeUrl } from '../components/ResourceCard.jsx'
+import { refIdForPublisher } from '../lib/quizVisibility.js'
 
 const SCOPE_LABELS = { lesson: '차시', topic: '학습주제', unit: '대단원' }
 const TYPE_LABELS = { 'multiple-choice': '객관식', ox: 'OX', 'short-answer': '단답식' }
@@ -260,21 +267,26 @@ export default function QuizzesAdminPage() {
     const lessonIds = new Set(topicLessons.map((l) => l.id))
     const lessonOrderById = new Map(topicLessons.map((l) => [l.id, l.차시순서]))
     return questions
-      .filter(
-        (q) =>
-          (q.scope === 'topic' && q.refId === topicId) ||
-          (q.scope === 'lesson' && lessonIds.has(q.refId)),
-      )
-      .map((q) => ({
-        ...q,
-        groupLabel: q.scope === 'topic' ? '학습주제 전체' : `${lessonOrderById.get(q.refId)}차시`,
-      }))
+      .filter((q) => {
+        const matchedRefId = refIdForPublisher(q, publisherId)
+        return (
+          (q.scope === 'topic' && matchedRefId === topicId) ||
+          (q.scope === 'lesson' && lessonIds.has(matchedRefId))
+        )
+      })
+      .map((q) => {
+        const matchedRefId = refIdForPublisher(q, publisherId)
+        return {
+          ...q,
+          groupLabel: q.scope === 'topic' ? '학습주제 전체' : `${lessonOrderById.get(matchedRefId)}차시`,
+        }
+      })
   }
 
   // 학습주제(및 그 차시)에서 만든 퀴즈는 자동으로 대단원 전체 퀴즈에도 속한다.
   function questionsForUnit(targetUnitId) {
     const unitQuestions = questions
-      .filter((q) => q.scope === 'unit' && q.refId === targetUnitId)
+      .filter((q) => q.scope === 'unit' && refIdForPublisher(q, publisherId) === targetUnitId)
       .map((q) => ({ ...q, groupLabel: '대단원 전체' }))
     const rolledUp = getTopics(publisherId, targetUnitId).flatMap((topic) =>
       questionsForTopic(targetUnitId, topic.id).map((q) => ({
@@ -304,11 +316,17 @@ export default function QuizzesAdminPage() {
     setSaveError('')
     try {
       if (mode === 'create') {
-        await createQuestion({ scope, refId, ...data })
+        const refs = findMatchingRefsAcrossPublishers(publisherId, scope, {
+          unitId,
+          topicId,
+          lessonId,
+        })
+        await createQuestion({ scope, refId, refs, ...data })
       } else if (mode && mode.edit) {
         await updateQuestion(mode.edit, {
           scope: editingQuestion.scope,
           refId: editingQuestion.refId,
+          refs: editingQuestion.refs ?? [],
           visible: editingQuestion.visible !== false,
           status: editingQuestion.status ?? 'published',
           submittedBy: editingQuestion.submittedBy ?? null,

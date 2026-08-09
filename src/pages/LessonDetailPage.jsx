@@ -54,11 +54,6 @@ export default function LessonDetailPage() {
             .length > 0
         )
           scopes.push('topic')
-        if (
-          selectVisibleQuestionsForScope(all, { publisherId, scope: 'unit', refId: unitId })
-            .length > 0
-        )
-          scopes.push('unit')
         if (!ignore) setQuizScopes(scopes)
       })
       .catch(() => {
@@ -154,11 +149,6 @@ export default function LessonDetailPage() {
         {quizScopes.includes('topic') && (
           <Link to={`/quiz/${publisherId}/topic/${topicId}`} className="quiz-link">
             이 학습주제 퀴즈
-          </Link>
-        )}
-        {quizScopes.includes('unit') && (
-          <Link to={`/quiz/${publisherId}/unit/${unitId}`} className="quiz-link">
-            이 대단원 퀴즈
           </Link>
         )}
       </div>

@@ -54,26 +54,26 @@ describe('StudentQuizSubmitPage', () => {
     fireEvent.click(screen.getByLabelText('정답: O'))
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
-    await waitFor(() =>
-      expect(createQuestion).toHaveBeenCalledWith(
-        {
-          scope: 'lesson',
-          refId: 'ecrimedia-u1-t5-l1',
-          type: 'ox',
-          question: '학생이 만든 문제',
-          answer: 'O',
-        },
-        {
-          status: 'pending',
-          submittedBy: {
-            schoolId: 'songlim-cho',
-            schoolName: '송림초등학교',
-            studentName: '홍길동',
-            role: 'student',
-          },
-        },
-      ),
-    )
+    await waitFor(() => expect(createQuestion).toHaveBeenCalled())
+    const [questionArg, optionsArg] = createQuestion.mock.calls[0]
+    expect(questionArg).toMatchObject({
+      scope: 'lesson',
+      refId: 'ecrimedia-u1-t5-l1',
+      type: 'ox',
+      question: '학생이 만든 문제',
+      answer: 'O',
+    })
+    expect(questionArg.refs).toContainEqual({ publisherId: 'ecrimedia', refId: 'ecrimedia-u1-t5-l1' })
+    expect(questionArg.refs.length).toBeGreaterThan(1)
+    expect(optionsArg).toEqual({
+      status: 'pending',
+      submittedBy: {
+        schoolId: 'songlim-cho',
+        schoolName: '송림초등학교',
+        studentName: '홍길동',
+        role: 'student',
+      },
+    })
   })
 
   it('제출 후에는 검토 요청 안내와 차시로 돌아가는 링크를 보여준다', async () => {
