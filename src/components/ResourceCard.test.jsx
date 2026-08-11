@@ -73,19 +73,64 @@ describe('ResourceCard', () => {
     expect(screen.getByText('자료 열기')).toHaveAttribute('href', 'https://example.com/clip.mp4')
   })
 
-  it('파일(PDF/HWP) 자료는 QR·이미지 없이 "자료 열기" 링크만 보여준다', () => {
+  it('구글드라이브가 아닌 일반 파일(PDF/HWP) 링크는 미리보기 없이 "자료 열기" 링크만 보여준다', () => {
     render(
       <ResourceCard
-        resource={{ type: 'file', title: '활동지.pdf', url: 'https://drive.google.com/file/d/abc' }}
+        resource={{ type: 'file', title: '활동지.pdf', url: 'https://example.com/활동지.pdf' }}
       />,
     )
     expect(screen.getByText('활동지.pdf')).toBeInTheDocument()
     expect(screen.getByText('📄 파일(PDF/HWP)')).toBeInTheDocument()
     expect(screen.getByText('자료 열기')).toHaveAttribute(
       'href',
-      'https://drive.google.com/file/d/abc',
+      'https://example.com/활동지.pdf',
     )
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('활동지.pdf')).not.toBeInTheDocument()
+  })
+
+  it('구글드라이브로 공유한 파일(PDF/HWP)은 미리보기 iframe으로 바로 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{
+          type: 'file',
+          title: '활동지.pdf',
+          url: 'https://drive.google.com/file/d/abc123/view?usp=sharing',
+        }}
+      />,
+    )
+    const iframe = screen.getByTitle('활동지.pdf')
+    expect(iframe.tagName).toBe('IFRAME')
+    expect(iframe).toHaveAttribute('src', 'https://drive.google.com/file/d/abc123/preview')
+    expect(screen.getByText('자료 열기')).toBeInTheDocument()
+  })
+
+  it('구글드라이브로 공유한 사진도 img 대신 미리보기 iframe으로 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{
+          type: 'photo',
+          title: '갈대밭',
+          url: 'https://drive.google.com/file/d/xyz789/view?usp=sharing',
+        }}
+      />,
+    )
+    const iframe = screen.getByTitle('갈대밭')
+    expect(iframe.tagName).toBe('IFRAME')
+    expect(iframe).toHaveAttribute('src', 'https://drive.google.com/file/d/xyz789/preview')
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('구글드라이브 open?id= 형식 링크도 미리보기로 보여준다', () => {
+    render(
+      <ResourceCard
+        resource={{ type: 'file', title: 'QR 안내', url: 'https://drive.google.com/open?id=qr001' }}
+      />,
+    )
+    expect(screen.getByTitle('QR 안내')).toHaveAttribute(
+      'src',
+      'https://drive.google.com/file/d/qr001/preview',
+    )
   })
 
   it('링크가 없으면 준비 중 문구를 보여준다', () => {

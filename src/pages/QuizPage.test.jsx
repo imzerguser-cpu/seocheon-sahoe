@@ -199,6 +199,92 @@ describe('QuizPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('정답이에요')
   })
 
+  it('오답을 제출해도 잠기지 않고, 다시 골라 제출하면 정답 처리된다(한 번 더 기회)', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: 'OX 질문', answer: 'O' },
+    ])
+    renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() => expect(screen.getByText('OX 질문')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'X' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+    expect(screen.getByRole('status')).toHaveTextContent('아쉬워요')
+    expect(screen.getByRole('button', { name: 'O' })).not.toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'O' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+    expect(screen.getByRole('status')).toHaveTextContent('정답이에요')
+  })
+
+  it('두 번 연속 오답이면 더 이상 시도할 수 없고 정답을 알려준다', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: 'OX 질문', answer: 'O' },
+    ])
+    renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() => expect(screen.getByText('OX 질문')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'X' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+    fireEvent.click(screen.getByRole('button', { name: 'X' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('정답은 O예요')
+    expect(screen.getByRole('button', { name: 'O' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: '제출' })).not.toBeInTheDocument()
+  })
+
+  it('모든 문제를 다 풀면(정답/최종오답) 몇 개 중 몇 개 맞았는지 팝업으로 보여준다', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: '문제1', answer: 'O' },
+      { id: 'q2', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: '문제2', answer: 'X' },
+    ])
+    renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() => expect(screen.getByText('문제1')).toBeInTheDocument())
+    const [firstO] = screen.getAllByRole('button', { name: 'O' })
+    const [, secondX] = screen.getAllByRole('button', { name: 'X' })
+    fireEvent.click(firstO)
+    fireEvent.click(screen.getAllByRole('button', { name: '제출' })[0])
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    fireEvent.click(secondX)
+    fireEvent.click(screen.getAllByRole('button', { name: '제출' })[0])
+
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+    expect(screen.getByRole('dialog')).toHaveTextContent('2문제 중 2개 정답')
+  })
+
+  it('틀린 문제가 있어도 결과 팝업에 정답 개수를 정확히 보여준다', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: '문제1', answer: 'O' },
+    ])
+    renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() => expect(screen.getByText('문제1')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'X' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+    fireEvent.click(screen.getByRole('button', { name: 'X' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+    expect(screen.getByRole('dialog')).toHaveTextContent('1문제 중 0개 정답')
+  })
+
+  it('결과 팝업을 닫을 수 있다', async () => {
+    fetchAllQuestions.mockResolvedValue([
+      { id: 'q1', scope: 'lesson', refId: 'ecrimedia-u1-t5-l1', type: 'ox', question: '문제1', answer: 'O' },
+    ])
+    renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
+
+    await waitFor(() => expect(screen.getByText('문제1')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'O' }))
+    fireEvent.click(screen.getByRole('button', { name: '제출' }))
+
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('뒤로 가기 버튼을 누르면 이전 화면으로 돌아간다', () => {
     renderPage('/quiz/ecrimedia/lesson/ecrimedia-u1-t5-l1')
     fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }))

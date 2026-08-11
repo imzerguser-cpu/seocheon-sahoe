@@ -764,6 +764,14 @@ button:disabled {
   display: block;
 }
 
+.resource-card .drive-preview {
+  width: 100%;
+  height: 420px;
+  border: none;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
 .teacher-usage-note {
   background: #fff0dd;
   border: 1px dashed var(--color-primary);
@@ -796,4 +804,30 @@ button:disabled {
   border-radius: var(--radius-md);
   text-decoration: none;
   font-weight: 700;
+}
+
+.quiz-summary-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.quiz-summary-dialog {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+  display: grid;
+  gap: 16px;
+  max-width: 320px;
+}
+
+.quiz-summary-dialog p {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
 }

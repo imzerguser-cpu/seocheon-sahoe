@@ -7,12 +7,23 @@ import QuizPlaceholder from '../components/QuizPlaceholder.jsx'
 
 const VALID_SCOPES = ['lesson', 'topic', 'unit']
 
-function QuizQuestion({ question }) {
+function correctAnswerLabel(question) {
+  if (question.type === 'multiple-choice') {
+    return normalizeChoice(question.choices[question.answerIndex]).text
+  }
+  return question.answer
+}
+
+// 한 번 틀려도 한 번 더 도전할 수 있게, 두 번째 시도까지 틀려야 최종 오답으로
+// 확정하고 정답을 알려준다. 정답을 맞히거나 두 번째 시도까지 끝나면(=최종
+// 결과가 정해지면) onFinal로 부모에게 알려 대단원 퀴즈 결과 집계에 반영한다.
+function QuizQuestion({ question, onFinal }) {
   const [selectedIndex, setSelectedIndex] = useState(null)
   const [selectedOx, setSelectedOx] = useState(null)
   const [shortAnswer, setShortAnswer] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [isCorrect, setIsCorrect] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const [result, setResult] = useState(null) // null | 'correct' | 'incorrect' | 'final-incorrect'
+  const isFinal = result === 'correct' || result === 'final-incorrect'
 
   function handleSubmit() {
     let correct = false
@@ -23,8 +34,17 @@ function QuizQuestion({ question }) {
     } else {
       correct = shortAnswer.trim() === question.answer.trim()
     }
-    setIsCorrect(correct)
-    setSubmitted(true)
+    const nextAttempts = attempts + 1
+    setAttempts(nextAttempts)
+    if (correct) {
+      setResult('correct')
+      onFinal(question.id, true)
+    } else if (nextAttempts >= 2) {
+      setResult('final-incorrect')
+      onFinal(question.id, false)
+    } else {
+      setResult('incorrect')
+    }
   }
 
   return (
@@ -51,7 +71,7 @@ function QuizQuestion({ question }) {
                 type="radio"
                 name={`answer-${question.id}`}
                 checked={selectedIndex === i}
-                disabled={submitted}
+                disabled={isFinal}
                 onChange={() => setSelectedIndex(i)}
               />
             </li>
@@ -64,7 +84,7 @@ function QuizQuestion({ question }) {
           <button
             type="button"
             aria-pressed={selectedOx === 'O'}
-            disabled={submitted}
+            disabled={isFinal}
             onClick={() => setSelectedOx('O')}
           >
             O
@@ -72,7 +92,7 @@ function QuizQuestion({ question }) {
           <button
             type="button"
             aria-pressed={selectedOx === 'X'}
-            disabled={submitted}
+            disabled={isFinal}
             onClick={() => setSelectedOx('X')}
           >
             X
@@ -87,19 +107,21 @@ function QuizQuestion({ question }) {
             id={`short-answer-${question.id}`}
             type="text"
             value={shortAnswer}
-            disabled={submitted}
+            disabled={isFinal}
             onChange={(e) => setShortAnswer(e.target.value)}
           />
         </>
       )}
 
-      {!submitted && (
+      {!isFinal && (
         <button type="button" onClick={handleSubmit}>
           제출
         </button>
       )}
-      {submitted && (
-        <p role="status">{isCorrect ? '정답이에요! 🎉' : '아쉬워요, 다시 도전해 보세요.'}</p>
+      {result === 'correct' && <p role="status">정답이에요! 🎉</p>}
+      {result === 'incorrect' && <p role="status">아쉬워요, 다시 도전해 보세요.</p>}
+      {result === 'final-incorrect' && (
+        <p role="status">아쉬워요, 정답은 {correctAnswerLabel(question)}예요.</p>
       )}
     </li>
   )
@@ -112,6 +134,8 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const [results, setResults] = useState({})
+  const [showSummary, setShowSummary] = useState(false)
 
   useEffect(() => {
     if (!isValidScope) {
@@ -120,6 +144,8 @@ export default function QuizPage() {
     }
     setLoading(true)
     setLoadError(false)
+    setResults({})
+    setShowSummary(false)
     fetchAllQuestions()
       .then((all) => {
         setQuestions(selectVisibleQuestionsForScope(all, { publisherId, scope, refId }))
@@ -130,6 +156,18 @@ export default function QuizPage() {
         setLoading(false)
       })
   }, [publisherId, scope, refId, isValidScope])
+
+  function handleFinal(questionId, correct) {
+    setResults((prev) => {
+      const next = { ...prev, [questionId]: correct }
+      if (Object.keys(next).length === questions.length) {
+        setShowSummary(true)
+      }
+      return next
+    })
+  }
+
+  const correctCount = Object.values(results).filter(Boolean).length
 
   return (
     <main>
@@ -148,9 +186,21 @@ export default function QuizPage() {
       {isValidScope && !loading && !loadError && questions.length > 0 && (
         <ol className="quiz-question-list">
           {questions.map((question) => (
-            <QuizQuestion key={question.id} question={question} />
+            <QuizQuestion key={question.id} question={question} onFinal={handleFinal} />
           ))}
         </ol>
+      )}
+      {showSummary && (
+        <div className="quiz-summary-backdrop">
+          <div className="quiz-summary-dialog" role="dialog" aria-label="퀴즈 결과">
+            <p>
+              {questions.length}문제 중 {correctCount}개 정답이에요!
+            </p>
+            <button type="button" onClick={() => setShowSummary(false)}>
+              확인
+            </button>
+          </div>
+        </div>
       )}
     </main>
   )

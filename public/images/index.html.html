@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서천군 사회 지역화 교과서 도움자료</title>
+    <style>
+        /* 기본 여백 및 폰트 초기화 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+
+        /* ---------------- 로그인 영역 (기존) ---------------- */
+        #loginArea {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .sidebar {
+            width: 390px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            font-size: 17px;
+            font-weight: 700;
+            border-bottom: 1px solid #ebebeb;
+            color: #242424;
+        }
+
+        .login-section {
+            padding: 20px;
+            border-bottom: 8px solid #f2f4f7;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid #dadada;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            padding: 12px;
+            background-color: #fff;
+            transition: border 0.2s;
+        }
+
+        .input-group:focus-within { border: 1px solid #03c75a; }
+        .input-group input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; }
+        
+        .login-btn {
+            width: 100%; padding: 14px; background-color: #03c75a; color: white;
+            border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 5px;
+        }
+        .login-btn:hover { background-color: #02b350; }
+
+        .places-section { padding: 0; overflow-y: auto; flex-grow: 1; text-align: center; }
+        .places-section img { width: 100%; height: auto; display: block; }
+
+        .footer-section { padding: 15px 20px 20px; background-color: #fff; border-top: 1px solid #ebebeb; }
+        .info-suggest { font-size: 13px; color: #666; margin-bottom: 15px; display: flex; align-items: center; cursor: pointer; }
+        .info-suggest::before { content: '📢'; margin-right: 5px; font-size: 14px; }
+        .admin-buttons { display: flex; gap: 10px; }
+        .admin-buttons button { flex: 1; padding: 10px; background-color: #f8f9fa; border: 1px solid #dadada; color: #555; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .admin-buttons button:hover { background-color: #e9ecef; color: #333; }
+
+        .map-container {
+            flex-grow: 1; position: relative; background-color: #e9ecef;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        .main-title {
+            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+            font-size: 38px; font-weight: 800; color: #222; letter-spacing: -1.5px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8); z-index: 20; width: 100%; text-align: center; pointer-events: none;
+        }
+        .map-wrapper { position: relative; max-width: 100%; max-height: 100%; }
+        .map-image { max-height: 100vh; max-width: 100%; object-fit: contain; display: block; }
+        .school-hotspot {
+            position: absolute; background-color: transparent; border: none; cursor: pointer;
+            transform: translate(-50%, -50%); width: 4.5%; height: 5%; transition: transform 0.2s; 
+        }
+        .school-hotspot:hover { transform: translate(-50%, -50%) scale(1.1); }
+
+        /* ---------------- 로그인 후 대시보드 영역 (신규) ---------------- */
+        #dashboardArea {
+            display: none; /* 초기에는 숨김 */
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background-color: #fff;
+        }
+
+        .dash-header {
+            height: 60px;
+            background-color: #03c75a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .dash-header button {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+        .dash-header button:hover { background: rgba(255,255,255,0.3); }
+
+        .dash-body {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* 아코디언 메뉴 사이드바 */
+        .dash-sidebar {
+            width: 320px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .semester-title {
+            font-size: 18px; color: #03c75a; font-weight: bold; margin: 20px 0 10px 0; border-bottom: 2px solid #03c75a; padding-bottom: 5px;
+        }
+        .semester-title:first-child { margin-top: 0; }
+
+        .unit-btn {
+            width: 100%; text-align: left; background: white; border: 1px solid #ced4da; padding: 12px 15px;
+            font-size: 15px; font-weight: bold; color: #333; cursor: pointer; display: flex; justify-content: space-between;
+            border-radius: 4px; margin-bottom: 5px; transition: 0.2s;
+        }
+        .unit-btn:hover { background: #e9ecef; }
+        
+        .unit-content {
+            display: none; /* 아코디언 닫힘 기본값 */
+            flex-direction: column; background: #fff; border: 1px solid #ced4da; border-top: none;
+            border-radius: 0 0 4px 4px; margin-top: -5px; margin-bottom: 10px; padding: 5px 0;
+        }
+        .unit-content.active { display: flex; }
+
+        .topic-btn {
+            text-align: left; background: none; border: none; padding: 10px 15px; font-size: 14px;
+            color: #555; cursor: pointer; transition: 0.2s; border-bottom: 1px dashed #eee;
+        }
+        .topic-btn:last-child { border-bottom: none; }
+        .topic-btn:hover, .topic-btn.selected { background: #e8f5e9; color: #03c75a; font-weight: bold; }
+
+        /* 메인 학습 콘텐츠 영역 */
+        .dash-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .content-header {
+            position: relative; border-bottom: 3px solid #222; padding-bottom: 20px; margin-bottom: 30px;
+        }
+        
+        .content-title {
+            text-align: center; font-size: 28px; font-weight: 800; color: #222; margin: 0 150px;
+        }
+
+        .content-meta {
+            position: absolute; right: 0; top: 0; text-align: right; font-size: 15px; color: #555; font-weight: bold;
+        }
+        .content-meta span { display: block; margin-bottom: 5px; }
+        .content-meta .highlight { color: #03c75a; }
+
+        /* 미디어 플레이스홀더 (사진, PDF, 영상, QR) */
+        .media-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+        .media-box {
+            background-color: #f1f3f5; border: 2px dashed #adb5bd; border-radius: 8px;
+            height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #868e96; font-size: 20px; font-weight: bold; transition: 0.2s; cursor: pointer;
+        }
+        .media-box:hover { background-color: #e9ecef; border-color: #868e96; }
+        .media-box .icon { font-size: 40px; margin-bottom: 10px; }
+        .media-box .desc { font-size: 14px; font-weight: normal; margin-top: 5px; }
+
+        /* 초기 빈 화면 안내 */
+        .empty-state {
+            display: flex; height: 100%; justify-content: center; align-items: center;
+            color: #adb5bd; font-size: 20px; font-weight: bold; flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 로그인 영역 -->
+    <div id="loginArea">
+        <!-- 왼쪽 사이드바 -->
+        <div class="sidebar">
+            <div class="header">
+                <span>&lt; 충남 서천군</span>
+                <span class="close-btn">✕</span>
+            </div>
+            
+            <div class="login-section">
+                <div class="input-group">
+                    <input type="text" id="schoolInput" placeholder="지도에서 학교 아이콘을 클릭하세요" readonly>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="nameInput" placeholder="이름을 입력하세요">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="passwordInput" placeholder="비밀번호를 입력하세요">
+                </div>
+                <button class="login-btn" onclick="handleLogin()">로그인</button>
+            </div>
+
+            <div class="places-section">
+                <img src="image_70be9c.png" alt="서천군 가볼만한 곳">
+            </div>
+
+            <div class="footer-section">
+                <div class="info-suggest" onclick="alert('정보수정 제안 페이지로 이동합니다.')">정보수정 제안</div>
+                <div class="admin-buttons">
+                    <button onclick="handleAdmin('school')">학교 관리자</button>
+                    <button onclick="handleAdmin('super')">전체 관리자</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 지도 영역 -->
+        <div class="map-container">
+            <h1 class="main-title">서천군 사회 지역화 교과서 도움자료</h1>
+            <div class="map-wrapper">
+                <img src="Gemini_Generated_Image_wzw9p1wzw9p1wzw9_2.png" alt="서천군 초등학교 지도" class="map-image">
+                <div class="school-hotspot" style="left: 14.5%; top: 15.5%;" onclick="selectSchool('서면')" title="서면초등학교"></div>
+                <div class="school-hotspot" style="left: 16%; top: 25%;" onclick="selectSchool('서도')" title="서도초등학교"></div>
+                <div class="school-hotspot" style="left: 31.5%; top: 34.5%;" onclick="selectSchool('비인')" title="비인초등학교"></div>
+                <div class="school-hotspot" style="left: 48.5%; top: 29%;" onclick="selectSchool('오성')" title="오성초등학교"></div>
+                <div class="school-hotspot" style="left: 39.5%; top: 46.5%;" onclick="selectSchool('부내')" title="부내초등학교"></div>
+                <div class="school-hotspot" style="left: 45%; top: 62.5%;" onclick="selectSchool('마동')" title="마동초등학교"></div>
+                <div class="school-hotspot" style="left: 55.5%; top: 68.5%;" onclick="selectSchool('송림')" title="송림초등학교"></div>
+                <div class="school-hotspot" style="left: 59.5%; top: 70.5%;" onclick="selectSchool('송석')" title="송석초등학교"></div>
+                <div class="school-hotspot" style="left: 50.5%; top: 81%;" onclick="selectSchool('장항')" title="장항초등학교"></div>
+                <div class="school-hotspot" style="left: 55.5%; top: 82%;" onclick="selectSchool('장항중앙')" title="장항중앙초등학교"></div>
+                <div class="school-hotspot" style="left: 64.5%; top: 44.5%;" onclick="selectSchool('시초')" title="시초초등학교"></div>
+                <div class="school-hotspot" style="left: 76.5%; top: 39.5%;" onclick="selectSchool('마산')" title="마산초등학교"></div>
+                <div class="school-hotspot" style="left: 67.5%; top: 51.5%;" onclick="selectSchool('기산')" title="기산초등학교"></div>
+                <div class="school-hotspot" style="left: 80.5%; top: 55.5%;" onclick="selectSchool('한산')" title="한산초등학교"></div>
+                <div class="school-hotspot" style="left: 72.5%; top: 72%;" onclick="selectSchool('화양')" title="화양초등학교"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 로그인 후 대시보드 영역 -->
+    <div id="dashboardArea">
+        <div class="dash-header">
+            <div id="userInfoDisplay">서천군 지역화 교과서 도움자료</div>
+            <button onclick="logout()">로그아웃</button>
+        </div>
+        
+        <div class="dash-body">
+            <!-- 왼쪽 진도표 (아코디언) -->
+            <div class="dash-sidebar" id="sidebarMenu">
+                <!-- 자바스크립트를 통해 출판사에 맞는 메뉴가 렌더링 됩니다. -->
+            </div>
+
+            <!-- 오른쪽 학습 콘텐츠 -->
+            <div class="dash-content" id="mainContent">
+                <div class="empty-state">
+                    <div>👈 왼쪽 메뉴에서 학습할 대단원과 주제를 선택해 주세요.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------- [데이터 설정 영역] ----------------
+        // 1. 학교별 비밀번호
+        const schoolPasswords = {
+            "기산초등학교": "0101", "마동초등학교": "0202", "마산초등학교": "0303",
+            "부내초등학교": "0404", "비인초등학교": "0505", "서도초등학교": "0606",
+            "서면초등학교": "0707", "송림초등학교": "0808", "송석초등학교": "0909",
+            "시초초등학교": "1010", "오성초등학교": "1111", "장항초등학교": "1212",
+            "장항중앙초등학교": "1313", "한산초등학교": "1414", "화양초등학교": "1515"
+        };
+
+        // 2. 학교별 채택 출판사 매핑 (선생님의 시트를 보고 출판사를 맞게 수정해주세요)
+        const schoolPublisher = {
+            "기산초등학교": "천재교육",
+            "장항초등학교": "미래엔",
+            "서면초등학교": "비상교육" // 테스트용 임시 매핑입니다. 모든 학교를 채워주세요.
+        };
+
+        // 3. 출판사별 진도표 데이터 (시트를 바탕으로 이 객체를 채워넣으시면 됩니다)
+        const curriculumData = {
+            "천재교육": {
+                "1학기": [
+                    {
+                        unit: "1. 우리가 알아보는 고장 이야기",
+                        topics: [
+                            { title: "우리 고장의 장소 찾아보기", period: "1", totalPeriod: "15", pages: "10-13" },
+                            { title: "우리 고장의 주요 장소 백지도에 나타내기", period: "2", totalPeriod: "15", pages: "14-17" },
+                            { title: "우리 고장의 자랑할 만한 장소 소개하기", period: "3", totalPeriod: "15", pages: "18-21" }
+                        ]
+                    },
+                    {
+                        unit: "2. 우리가 알아보는 고장 이야기 (2)",
+                        topics: [
+                            { title: "옛날과 오늘날의 생활 모습 비교하기", period: "1", totalPeriod: "12", pages: "25-28" }
+                        ]
+                    }
+                ],
+                "2학기": [
+                    {
+                        unit: "1. 환경에 따라 다른 삶의 모습",
+                        topics: [
+                            { title: "우리 고장의 환경 살펴보기", period: "1", totalPeriod: "10", pages: "10-15" }
+                        ]
+                    }
+                ]
+            },
+            "미래엔": {
+                "1학기": [
+                    {
+                        unit: "1. 우리 고장의 모습",
+                        topics: [
+                            { title: "머릿속에 떠오르는 우리 고장의 모습", period: "1", totalPeriod: "14", pages: "12-15" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // ---------------- [로그인 관련 로직] ----------------
+        function selectSchool(schoolName) {
+            document.getElementById('schoolInput').value = schoolName + "초등학교";
+            document.getElementById('nameInput').focus();
+        }
+
+        function handleLogin() {
+            const school = document.getElementById('schoolInput').value;
+            const name = document.getElementById('nameInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            if (!school) { alert("학교를 선택해주세요."); return; }
+            if (!name) { alert("이름을 입력해주세요."); return; }
+            if (!password) { alert("비밀번호를 입력해주세요."); return; }
+
+            if (password === schoolPasswords[school]) {
+                const publisher = schoolPublisher[school] || "천재교육"; // 매핑 안된 학교는 기본값 천재교육
+                
+                // 로그인 화면 숨기고 대시보드 표시
+                document.getElementById('loginArea').style.display = 'none';
+                document.getElementById('dashboardArea').style.display = 'flex';
+                document.getElementById('userInfoDisplay').innerHTML = `🏫 ${school} ${name}님 <span style="font-size:14px; font-weight:normal; margin-left:10px;">(출판사: ${publisher})</span>`;
+                
+                renderSidebar(publisher);
+            } else {
+                alert("비밀번호가 일치하지 않습니다.");
+            }
+        }
+
+        function logout() {
+            document.getElementById('dashboardArea').style.display = 'none';
+            document.getElementById('loginArea').style.display = 'flex';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('mainContent').innerHTML = '<div class="empty-state"><div>👈 왼쪽 메뉴에서 학습할 대단원과 주제를 선택해 주세요.</div></div>';
+        }
+
+        // 관리자 로그인
+        function handleAdmin(type) {
+            const adminPwd = prompt("관리자 비밀번호를 입력하세요:");
+            if (adminPwd === "20262026") {
+                alert("관리자로 로그인되었습니다. (관리자 전용 기능은 추후 개발 예정입니다.)");
+            } else if (adminPwd !== null) {
+                alert("비밀번호가 틀렸습니다.");
+            }
+        }
+
+        // ---------------- [대시보드 렌더링 로직] ----------------
+        // 1. 사이드바(아코디언) 그리기
+        function renderSidebar(publisherName) {
+            const sidebar = document.getElementById('sidebarMenu');
+            sidebar.innerHTML = '';
+            const pubData = curriculumData[publisherName];
+
+            if(!pubData) {
+                sidebar.innerHTML = '<div style="color:red;">해당 출판사의 데이터가 없습니다.</div>';
+                return;
+            }
+
+            // 학기별 반복 (1학기, 2학기)
+            for (const semester in pubData) {
+                const semesterTitle = document.createElement('div');
+                semesterTitle.className = 'semester-title';
+                semesterTitle.innerText = semester;
+                sidebar.appendChild(semesterTitle);
+
+                // 대단원별 반복
+                pubData[semester].forEach((unitObj, unitIndex) => {
+                    // 대단원 버튼
+                    const unitBtn = document.createElement('button');
+                    unitBtn.className = 'unit-btn';
+                    unitBtn.innerHTML = `<span>${unitObj.unit}</span> <span>▼</span>`;
+                    
+                    // 학습주제 컨테이너
+                    const unitContent = document.createElement('div');
+                    unitContent.className = 'unit-content';
+
+                    // 아코디언 토글 이벤트
+                    unitBtn.onclick = function() {
+                        unitContent.classList.toggle('active');
+                        unitBtn.innerHTML = unitContent.classList.contains('active') 
+                            ? `<span>${unitObj.unit}</span> <span>▲</span>` 
+                            : `<span>${unitObj.unit}</span> <span>▼</span>`;
+                    };
+
+                    // 학습주제(차시) 버튼들 생성
+                    unitObj.topics.forEach((topic) => {
+                        const topicBtn = document.createElement('button');
+                        topicBtn.className = 'topic-btn';
+                        topicBtn.innerText = `- ${topic.title}`;
+                        
+                        // 학습주제 클릭 시 메인 화면 렌더링
+                        topicBtn.onclick = function() {
+                            // 다른 버튼 선택 해제 후 현재 버튼 하이라이트
+                            document.querySelectorAll('.topic-btn').forEach(btn => btn.classList.remove('selected'));
+                            topicBtn.classList.add('selected');
+                            
+                            renderMainContent(topic);
+                        };
+                        unitContent.appendChild(topicBtn);
+                    });
+
+                    sidebar.appendChild(unitBtn);
+                    sidebar.appendChild(unitContent);
+                });
+            }
+        }
+
+        // 2. 학습 주제 선택 시 메인 콘텐츠 그리기
+        function renderMainContent(topic) {
+            const mainContent = document.getElementById('mainContent');
+            
+            // HTML 구조 생성
+            mainContent.innerHTML = `
+                <div class="content-header">
+                    <h2 class="content-title">${topic.title}</h2>
+                    <div class="content-meta">
+                        <span>해당차시 / 전체차시 : <strong class="highlight">${topic.period}</strong> / ${topic.totalPeriod} 차시</span>
+                        <span>교과서 쪽수 : <strong>${topic.pages}</strong> 쪽</span>
+                    </div>
+                </div>
+                
+                <!-- 미디어 자료가 들어갈 4개의 공간 -->
+                <div class="media-grid">
+                    <div class="media-box" onclick="alert('사진 자료 업로드/보기 기능 공간입니다.')">
+                        <div class="icon">🖼️</div>
+                        <div>사진 자료</div>
+                        <div class="desc">(클릭하여 보기)</div>
+                    </div>
+                    <div class="media-box" onclick="alert('PDF 파일 뷰어 공간입니다.')">
+                        <div class="icon">📄</div>
+                        <div>PDF 파일</div>
+                        <div class="desc">(클릭하여 열기)</div>
+                    </div>
+                    <div class="media-box" onclick="alert('동영상 재생 공간입니다.')">
+                        <div class="icon">▶️</div>
+                        <div>동영상 자료</div>
+                        <div class="desc">(클릭하여 재생)</div>
+                    </div>
+                    <div class="media-box" onclick="alert('QR코드 또는 외부 링크 공간입니다.')">
+                        <div class="icon">📱</div>
+                        <div>QR 코드</div>
+                        <div class="desc">(스마트폰으로 스캔하세요)</div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
