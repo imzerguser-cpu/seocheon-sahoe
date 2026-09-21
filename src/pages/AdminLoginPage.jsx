@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
-import { saveAdminSession, signInSuperAdmin } from '../lib/auth.js'
+import { saveAdminSession, signInSuperAdmin, sendSuperAdminPasswordReset } from '../lib/auth.js'
 import { fullSchoolName } from '../lib/schoolNames.js'
 import schools from '../data/schools.json'
 
@@ -13,6 +13,8 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [resetStatus, setResetStatus] = useState(null)
+  const [resetting, setResetting] = useState(false)
   const navigate = useNavigate()
 
   function switchTab(nextTab) {
@@ -20,6 +22,7 @@ export default function AdminLoginPage() {
     setError('')
     setPassword('')
     setEmail('')
+    setResetStatus(null)
   }
 
   async function handleSchoolSubmit(e) {
@@ -54,6 +57,19 @@ export default function AdminLoginPage() {
     }
     saveAdminSession({ role: 'super-admin' })
     navigate('/admin')
+  }
+
+  async function handleForgotPassword() {
+    setError('')
+    setResetStatus(null)
+    if (!email) {
+      setResetStatus('missing-email')
+      return
+    }
+    setResetting(true)
+    const success = await sendSuperAdminPasswordReset(email)
+    setResetting(false)
+    setResetStatus(success ? 'sent' : 'error')
   }
 
   return (
@@ -127,6 +143,25 @@ export default function AdminLoginPage() {
             로그인
           </button>
           {error && <p role="alert">{error}</p>}
+          <button
+            type="button"
+            className="forgot-password-link"
+            onClick={handleForgotPassword}
+            disabled={resetting}
+          >
+            비밀번호를 잊으셨나요?
+          </button>
+          {resetStatus === 'missing-email' && (
+            <p role="alert">이메일을 먼저 입력해 주세요.</p>
+          )}
+          {resetStatus === 'sent' && (
+            <p role="status">
+              비밀번호 재설정 이메일을 보냈어요. 메일함을 확인해 주세요.
+            </p>
+          )}
+          {resetStatus === 'error' && (
+            <p role="alert">재설정 이메일을 보내지 못했어요. 이메일 주소를 확인해 주세요.</p>
+          )}
         </form>
       )}
     </main>

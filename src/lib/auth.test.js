@@ -5,6 +5,7 @@ import {
   signOut,
   reauthenticateWithCredential,
   updatePassword,
+  sendPasswordResetEmail,
   EmailAuthProvider,
 } from 'firebase/auth'
 import {
@@ -18,6 +19,7 @@ import {
   signInSuperAdmin,
   signOutSuperAdmin,
   changeSuperAdminPassword,
+  sendSuperAdminPasswordReset,
 } from './auth.js'
 
 vi.mock('../firebase.js', () => ({ app: {} }))
@@ -27,6 +29,7 @@ vi.mock('firebase/auth', () => ({
   signOut: vi.fn(),
   reauthenticateWithCredential: vi.fn(),
   updatePassword: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
   EmailAuthProvider: { credential: vi.fn() },
 }))
 
@@ -153,6 +156,26 @@ describe('signOutSuperAdmin', () => {
     signOut.mockResolvedValue()
     await signOutSuperAdmin()
     expect(signOut).toHaveBeenCalledWith({})
+  })
+})
+
+describe('sendSuperAdminPasswordReset', () => {
+  beforeEach(() => {
+    getAuth.mockClear()
+    sendPasswordResetEmail.mockReset()
+  })
+
+  it('재설정 이메일 발송에 성공하면 true를 반환한다', async () => {
+    sendPasswordResetEmail.mockResolvedValue()
+    const result = await sendSuperAdminPasswordReset('admin@example.com')
+    expect(result).toBe(true)
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith({}, 'admin@example.com')
+  })
+
+  it('발송에 실패하면(예: 존재하지 않는 이메일) false를 반환한다', async () => {
+    sendPasswordResetEmail.mockRejectedValue(new Error('auth/user-not-found'))
+    const result = await sendSuperAdminPasswordReset('nobody@example.com')
+    expect(result).toBe(false)
   })
 })
 

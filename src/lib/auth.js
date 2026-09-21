@@ -4,6 +4,7 @@ import {
   signOut,
   reauthenticateWithCredential,
   updatePassword,
+  sendPasswordResetEmail,
   EmailAuthProvider,
 } from 'firebase/auth'
 import { app } from '../firebase.js'
@@ -71,6 +72,18 @@ export async function signInSuperAdmin(email, password) {
 
 export async function signOutSuperAdmin() {
   await signOut(getAuth(app))
+}
+
+// Sends Firebase's own hosted password-reset email to a super-admin account.
+// Used when the super-admin has forgotten their password and can't sign in
+// to change it themselves (changeSuperAdminPassword requires being logged in).
+export async function sendSuperAdminPasswordReset(email) {
+  try {
+    await sendPasswordResetEmail(getAuth(app), email)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function changeSuperAdminPassword(currentPassword, newPassword) {

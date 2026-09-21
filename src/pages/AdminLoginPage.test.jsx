@@ -9,10 +9,15 @@ vi.mock('../lib/schoolPasswordsRepo.js', () => ({
 vi.mock('../lib/auth.js', () => ({
   saveAdminSession: vi.fn(),
   signInSuperAdmin: vi.fn(),
+  sendSuperAdminPasswordReset: vi.fn(),
 }))
 
 import { fetchSchoolAdminPasswords } from '../lib/schoolPasswordsRepo.js'
-import { saveAdminSession, signInSuperAdmin } from '../lib/auth.js'
+import {
+  saveAdminSession,
+  signInSuperAdmin,
+  sendSuperAdminPasswordReset,
+} from '../lib/auth.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -122,6 +127,40 @@ describe('AdminLoginPage', () => {
 
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent('로그인에 실패했어요'),
+    )
+  })
+
+  it('전체관리자: 비밀번호를 잊으셨나요 클릭 시 이메일이 없으면 안내만 하고 발송하지 않는다', async () => {
+    renderPage()
+    fireEvent.click(screen.getByRole('button', { name: '전체관리자' }))
+    fireEvent.click(screen.getByRole('button', { name: '비밀번호를 잊으셨나요?' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('이메일을 먼저 입력해 주세요'),
+    )
+    expect(sendSuperAdminPasswordReset).not.toHaveBeenCalled()
+  })
+
+  it('전체관리자: 이메일을 입력하고 비밀번호를 잊으셨나요를 누르면 재설정 이메일을 보낸다', async () => {
+    sendSuperAdminPasswordReset.mockResolvedValue(true)
+    renderPage()
+    fireEvent.click(screen.getByRole('button', { name: '전체관리자' }))
+    fireEvent.change(screen.getByLabelText('이메일'), { target: { value: 'admin@example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: '비밀번호를 잊으셨나요?' }))
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('재설정 이메일을 보냈어요'))
+    expect(sendSuperAdminPasswordReset).toHaveBeenCalledWith('admin@example.com')
+  })
+
+  it('전체관리자: 재설정 이메일 발송이 실패하면 에러를 보여준다', async () => {
+    sendSuperAdminPasswordReset.mockResolvedValue(false)
+    renderPage()
+    fireEvent.click(screen.getByRole('button', { name: '전체관리자' }))
+    fireEvent.change(screen.getByLabelText('이메일'), { target: { value: 'admin@example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: '비밀번호를 잊으셨나요?' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('재설정 이메일을 보내지 못했어요'),
     )
   })
 })
