@@ -1,9 +1,16 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import UnitListPage from './UnitListPage.jsx'
 import { AuthProvider } from '../contexts/AuthContext.jsx'
 import { saveSession } from '../lib/auth.js'
+
+vi.mock('../lib/gameSettingsRepo.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, fetchGameSettings: vi.fn().mockResolvedValue({}) }
+})
+
+import { fetchGameSettings } from '../lib/gameSettingsRepo.js'
 
 beforeEach(() => {
   localStorage.clear()
@@ -52,5 +59,18 @@ describe('UnitListPage', () => {
       'href',
       '/my-quizzes',
     )
+  })
+
+  it('관리자가 게임을 켜 두면 지식의 성 게임 링크를 보여준다', async () => {
+    fetchGameSettings.mockResolvedValueOnce({ 'jangang-cho': true })
+    renderWithRoute()
+    expect(await screen.findByRole('link', { name: /지식의 성/ })).toHaveAttribute('href', '/game/ecrimedia')
+  })
+
+  it('게임이 꺼져 있으면 게임 링크를 보여주지 않는다', async () => {
+    fetchGameSettings.mockResolvedValueOnce({ 'jangang-cho': false })
+    renderWithRoute()
+    await Promise.resolve()
+    expect(screen.queryByRole('link', { name: /지식의 성/ })).not.toBeInTheDocument()
   })
 })

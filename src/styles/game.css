@@ -1,0 +1,815 @@
+/* 지식의 성 게임 — 남색 바탕에 금빛 강조. 사이트 공통 button 스타일을 덮어쓴다. */
+
+.game-shell {
+  --g-bg: #101a30;
+  --g-panel: #1c2a46;
+  --g-panel-2: #24365a;
+  --g-line: #3c5179;
+  --g-gold: #f0c96a;
+  --g-gold-dark: #c99a3a;
+  --g-text: #eef2fb;
+  --g-muted: #a9b6d0;
+  --g-good: #6fdc8c;
+  --g-bad: #ff7a6b;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 24px max(16px, 3vw) 48px;
+  background: radial-gradient(ellipse at top, #1d2c4f 0%, var(--g-bg) 60%);
+  color: var(--g-text);
+}
+
+.game-shell.battle {
+  padding: 12px max(8px, 1.5vw) 16px;
+}
+
+.game-shell button {
+  border-radius: 10px;
+  font-family: inherit;
+}
+
+.game-back {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 6px 4px;
+  background: none;
+  color: var(--g-muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.game-back:hover {
+  color: var(--g-gold);
+}
+
+.game-loading {
+  margin-top: 30vh;
+  text-align: center;
+  color: var(--g-muted);
+  font-size: 1.1rem;
+}
+
+.game-eyebrow {
+  margin: 0 0 6px;
+  color: var(--g-gold);
+  letter-spacing: 0.2em;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.game-title {
+  max-width: 900px;
+  margin: 8px auto 28px;
+  text-align: center;
+}
+
+.game-title h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  color: #fff6dd;
+  text-shadow: 0 4px 0 #0a1122;
+}
+
+.game-title p {
+  margin: 0;
+  color: var(--g-muted);
+  line-height: 1.7;
+}
+
+.game-primary {
+  padding: 12px 22px;
+  border: none;
+  border-bottom: 3px solid var(--g-gold-dark);
+  background: linear-gradient(#f7d886, var(--g-gold));
+  color: #2a1d05;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.game-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.game-primary:disabled {
+  border-bottom-color: #4b5a78;
+  background: #36476a;
+  color: #8796b5;
+  cursor: not-allowed;
+}
+
+.game-secondary {
+  padding: 12px 22px;
+  border: 1px solid var(--g-line);
+  background: var(--g-panel-2);
+  color: var(--g-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── 미션 선택 ── */
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--g-line);
+  border-radius: 14px;
+  background: linear-gradient(160deg, var(--g-panel-2), var(--g-panel));
+}
+
+.mission-card.locked {
+  opacity: 0.6;
+}
+
+.mission-meta {
+  color: var(--g-gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.mission-name {
+  flex: 1;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.mission-count {
+  color: var(--g-muted);
+  font-size: 0.9rem;
+}
+
+/* ── 수호자 선택 ── */
+.game-hero-head {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.game-hero-head h1 {
+  margin: 0 0 14px;
+  font-size: clamp(1.7rem, 4.5vw, 2.6rem);
+}
+
+.game-mission-chip {
+  display: inline-block;
+  margin: 0;
+  padding: 10px 22px;
+  border: 1px solid var(--g-line);
+  border-radius: 10px;
+  background: var(--g-panel);
+  color: var(--g-muted);
+}
+
+.game-mission-chip b {
+  color: var(--g-gold);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 18px;
+  overflow: hidden;
+  border: 2px solid var(--g-line) !important;
+  background: linear-gradient(170deg, var(--g-panel-2), var(--g-panel)) !important;
+  color: var(--g-text) !important;
+  font-weight: 400 !important;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.hero-card:hover {
+  transform: translateY(-3px);
+}
+
+.hero-card.selected {
+  border-color: var(--g-gold) !important;
+  box-shadow: 0 0 0 3px rgba(240, 201, 106, 0.25);
+}
+
+.hero-tag {
+  align-self: stretch;
+  margin: 0 -14px 6px;
+  padding: 6px;
+  background: #b89a5c;
+  color: #241a06;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.hero-card.selected .hero-tag {
+  background: var(--g-gold);
+}
+
+.sprite-image {
+  image-rendering: pixelated;
+}
+
+.hero-portrait {
+  width: 96px;
+  height: auto;
+  margin: 6px 0;
+}
+
+.hero-name {
+  font-size: 1.6rem;
+}
+
+.hero-desc {
+  min-height: 2.8em;
+  color: var(--g-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--g-gold);
+  font-weight: 700;
+}
+
+.hero-trait {
+  font-size: 0.8rem;
+  color: var(--g-muted);
+}
+
+.game-howto {
+  margin: 20px 0 12px;
+  text-align: center;
+  color: var(--g-muted);
+  font-size: 0.9rem;
+}
+
+.game-start {
+  display: block;
+  min-width: 240px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+}
+
+/* ── 전투 화면 ── */
+.battle-frame {
+  max-width: 1280px;
+  margin: 0 auto;
+  background: var(--g-bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.battle-frame:fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: none;
+  padding: 8px;
+}
+
+.battle-frame:fullscreen .battle-stage {
+  width: min(100%, calc((100vh - 120px) * 16 / 9));
+  margin: 0 auto;
+}
+
+.battle-frame:fullscreen .battle-bottom {
+  width: min(100%, calc((100vh - 120px) * 16 / 9));
+  margin: 0 auto;
+}
+
+.battle-stage {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #2a3b5f;
+  border-radius: 10px;
+  aspect-ratio: 16 / 9;
+}
+
+.battle-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.hud-top {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.hud-panel {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(16, 26, 48, 0.82);
+  font-size: clamp(0.62rem, 1.2vw, 0.85rem);
+}
+
+.hud-hero,
+.hud-castle {
+  width: min(24%, 210px);
+}
+
+.hud-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
+}
+
+.hud-stage b {
+  color: var(--g-gold);
+  letter-spacing: 0.12em;
+}
+
+.hud-stage span {
+  color: var(--g-muted);
+}
+
+.hud-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.hud-row b {
+  color: var(--g-gold);
+}
+
+.hud-bar {
+  height: 7px;
+  margin: 5px 0 3px;
+  border-radius: 4px;
+  background: #0a1122;
+  overflow: hidden;
+}
+
+.hud-bar i {
+  display: block;
+  height: 100%;
+  transition: width 0.15s;
+}
+
+.hud-bar i.hp {
+  background: linear-gradient(90deg, #ff6b5b, #ff9d7b);
+}
+
+.hud-bar i.castle {
+  background: linear-gradient(90deg, #5fb8ff, #9fdcff);
+}
+
+.hud-sub {
+  color: var(--g-muted);
+  text-align: right;
+}
+
+.hud-tools {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translate(-50%, clamp(46px, 7vw, 64px));
+  display: flex;
+  gap: 6px;
+}
+
+.hud-icon {
+  min-width: 36px;
+  padding: 5px 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(16, 26, 48, 0.75) !important;
+  color: var(--g-muted) !important;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.hud-icon.active {
+  color: var(--g-gold) !important;
+  border-color: var(--g-gold-dark) !important;
+}
+
+.joystick {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: rgba(16, 26, 48, 0.25);
+  touch-action: none;
+}
+
+.joystick-knob {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(220, 230, 245, 0.7);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.joystick-label {
+  position: absolute;
+  bottom: -20px;
+  color: #fff;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+.battle-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 24, 0.55);
+}
+
+.battle-bottom {
+  padding: 8px 4px 0;
+}
+
+.xp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--g-muted);
+  font-size: 0.8rem;
+}
+
+.xp-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #0a1122;
+  overflow: hidden;
+}
+
+.xp-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8fb8ff, #d6e6ff);
+}
+
+.skill-slots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-slot {
+  padding: 10px 6px;
+  border: 1px solid var(--g-line);
+  border-radius: 8px;
+  background: var(--g-panel);
+  text-align: center;
+  font-size: clamp(0.65rem, 1.3vw, 0.9rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-slot b {
+  color: var(--g-gold);
+  font-size: 0.85em;
+}
+
+.skill-slot.empty {
+  border-style: dashed;
+  background: transparent;
+  color: #5d6d8f;
+}
+
+/* ── 전투 위 모달 ── */
+.game-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92%, 760px);
+  max-height: 92%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: clamp(14px, 2.5vw, 28px);
+  border: 2px solid #c9a35a;
+  border-radius: 12px;
+  background: linear-gradient(170deg, #22345a, #172440);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.game-modal h2 {
+  margin: 4px 0 6px;
+  color: #fff3d4;
+  font-size: clamp(1.1rem, 2.6vw, 1.7rem);
+}
+
+.game-modal-kicker {
+  margin: 0;
+  color: var(--g-gold);
+  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.game-pause-note {
+  margin: 4px 0 12px;
+  color: var(--g-muted);
+  font-size: 0.85rem;
+}
+
+.question-prompt {
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.question-hint {
+  min-height: 1.2em;
+  margin: 0 0 10px;
+  color: var(--g-muted);
+  font-size: 0.85rem;
+}
+
+.answer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.answer-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(8px, 1.6vw, 14px) 14px !important;
+  border: 2px solid var(--g-line) !important;
+  background: var(--g-panel) !important;
+  color: var(--g-text) !important;
+  font-weight: 600 !important;
+  font-size: clamp(0.8rem, 1.6vw, 1rem);
+  text-align: left;
+  cursor: pointer;
+}
+
+.answer-option:hover:not(:disabled) {
+  border-color: var(--g-gold) !important;
+}
+
+.answer-option:disabled {
+  cursor: default;
+}
+
+.answer-grid.ox .answer-option {
+  justify-content: center;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 900 !important;
+}
+
+.answer-option.is-correct {
+  border-color: var(--g-good) !important;
+  background: #1f4a37 !important;
+}
+
+.answer-option.is-wrong {
+  border-color: var(--g-bad) !important;
+  background: #4f2630 !important;
+}
+
+.answer-num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #0f1930;
+  color: var(--g-gold);
+  font-weight: 800;
+}
+
+.answer-image {
+  max-width: 64px;
+  max-height: 48px;
+  border-radius: 4px;
+}
+
+.question-result {
+  margin-top: 14px;
+}
+
+.question-result p {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.question-result.good p {
+  color: var(--g-good);
+}
+
+.question-result.bad p {
+  color: #ffc2b8;
+}
+
+.question-result.bad b {
+  color: #fff;
+}
+
+.question-result .question-sub {
+  color: var(--g-muted) !important;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.pick-grid,
+.camp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.pick-card,
+.camp-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px !important;
+  border: 2px solid var(--g-line) !important;
+  background: var(--g-panel) !important;
+  color: var(--g-text) !important;
+  font-weight: 400 !important;
+  cursor: pointer;
+}
+
+.pick-card:hover,
+.camp-card:hover {
+  border-color: var(--g-gold) !important;
+  transform: translateY(-2px);
+}
+
+.pick-kind {
+  padding: 2px 10px;
+  border: 1px solid var(--g-line);
+  font-size: 0.75rem;
+}
+
+.pick-icon,
+.camp-icon {
+  font-size: 2.2rem;
+}
+
+.pick-name {
+  font-size: 1.15rem;
+}
+
+.pick-desc {
+  flex: 1;
+  color: var(--g-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.pick-level {
+  color: var(--g-gold);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pick-action {
+  align-self: stretch;
+  padding-top: 8px;
+  border-top: 1px solid var(--g-line);
+  font-size: 0.85rem;
+}
+
+.camp-card strong {
+  color: var(--g-gold);
+  font-size: 1.3rem;
+}
+
+.camp-card span {
+  color: var(--g-muted);
+  font-size: 0.85rem;
+}
+
+.camp-card .pick-action {
+  color: var(--g-text);
+}
+
+.camp-basis {
+  font-size: 0.78rem !important;
+}
+
+.camp-note {
+  color: var(--g-muted);
+  font-size: 0.85rem;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 10px 0 18px;
+}
+
+.result-stats div {
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--g-panel);
+}
+
+.result-stats dt {
+  color: var(--g-muted);
+  font-size: 0.8rem;
+}
+
+.result-stats dd {
+  margin: 4px 0 0;
+  color: var(--g-gold);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 세로 휴대폰처럼 전장이 작을 때는 문제·선택 창을 화면 전체 위에 띄운다. */
+@media (max-width: 760px) {
+  .game-modal {
+    position: fixed;
+    z-index: 20;
+    width: calc(100% - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .battle-dim {
+    position: fixed;
+    z-index: 19;
+  }
+}
+
+@media (max-width: 640px) {
+  .answer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .joystick {
+    width: 64px;
+    height: 64px;
+    left: 8px;
+    bottom: 8px;
+  }
+
+  .joystick-knob {
+    width: 28px;
+    height: 28px;
+  }
+
+  .joystick-label {
+    display: none;
+  }
+
+  .hud-hero,
+  .hud-castle {
+    width: 30%;
+    padding: 4px 6px;
+  }
+
+  .skill-slots {
+    gap: 4px;
+  }
+}

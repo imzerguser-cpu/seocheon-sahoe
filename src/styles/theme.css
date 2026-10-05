@@ -831,3 +831,58 @@ button:disabled {
   font-weight: 700;
   margin: 0;
 }
+
+/* 지식의 성 게임 입구 · 공개 설정 */
+.game-entry-link {
+  display: block;
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(120deg, #1c2a46, #2f4775);
+  color: #ffe9b0;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 0 #0f1930;
+}
+
+.game-entry-link:hover {
+  filter: brightness(1.08);
+}
+
+.game-settings-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-settings-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0e0cc;
+}
+
+.game-settings-name {
+  flex: 1;
+  font-weight: 700;
+}
+
+.game-toggle {
+  min-width: 170px;
+}
+
+.game-toggle.off {
+  background: #c9b9a6;
+}
+
+.game-toggle.on {
+  background: var(--color-accent);
+}
+
+.game-settings-error {
+  flex-basis: 100%;
+  color: #d9534f;
+  font-size: 0.9rem;
+}

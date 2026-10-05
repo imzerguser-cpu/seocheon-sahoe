@@ -17,6 +17,8 @@ import LessonDetailPage from './pages/LessonDetailPage.jsx'
 import QuizPage from './pages/QuizPage.jsx'
 import StudentQuizSubmitPage from './pages/StudentQuizSubmitPage.jsx'
 import MyQuizzesPage from './pages/MyQuizzesPage.jsx'
+import GamePage from './pages/GamePage.jsx'
+import GameSettingsPage from './pages/GameSettingsPage.jsx'
 
 export default function App() {
   return (
@@ -37,6 +39,7 @@ export default function App() {
             element={<StudentQuizSubmitPage />}
           />
           <Route path="/my-quizzes" element={<MyQuizzesPage />} />
+          <Route path="/game/:publisherId" element={<GamePage />} />
         </Route>
 
         <Route element={<AdminRoute />}>
@@ -45,6 +48,7 @@ export default function App() {
           <Route path="/admin/quizzes" element={<QuizzesAdminPage />} />
           <Route path="/admin/quizzes/review" element={<QuizReviewPage />} />
           <Route path="/admin/school-passwords" element={<SchoolPasswordsPage />} />
+          <Route path="/admin/game" element={<GameSettingsPage />} />
         </Route>
 
         <Route element={<SuperAdminRoute />}>

@@ -55,6 +55,15 @@ describe('AdminDashboardPage', () => {
     )
   })
 
+  it('학교관리자·전체관리자 모두 "게임 공개 설정" 링크를 볼 수 있다', () => {
+    for (const role of ['school-admin', 'super-admin']) {
+      saveAdminSession(role)
+      const { unmount } = renderPage()
+      expect(screen.getByRole('link', { name: '게임 공개 설정' })).toHaveAttribute('href', '/admin/game')
+      unmount()
+    }
+  })
+
   it('학교관리자로 로그인하면 "우리 학교 비밀번호" 링크가 보인다', () => {
     saveAdminSession('school-admin')
     renderPage()

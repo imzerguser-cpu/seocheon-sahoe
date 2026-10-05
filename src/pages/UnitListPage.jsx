@@ -1,11 +1,21 @@
+import { useEffect, useState } from 'react'
 import { useParams, Navigate, Link } from 'react-router-dom'
 import { getUnits, getPublishers } from '../lib/dataLoader.js'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import UnitAccordion from '../components/UnitAccordion.jsx'
+import { fetchGameSettings, isGameEnabled } from '../lib/gameSettingsRepo.js'
 
 export default function UnitListPage() {
   const { publisherId } = useParams()
   const { session, logout } = useAuth()
+  const [gameEnabled, setGameEnabled] = useState(false)
+
+  useEffect(() => {
+    if (!session) return
+    fetchGameSettings()
+      .then((settings) => setGameEnabled(isGameEnabled(settings, session.schoolId)))
+      .catch(() => setGameEnabled(false))
+  }, [session])
 
   if (!session) {
     return <Navigate to="/login" replace />
@@ -32,6 +42,11 @@ export default function UnitListPage() {
           </button>
         </div>
       </header>
+      {gameEnabled && (
+        <Link to={`/game/${publisherId}`} className="game-entry-link">
+          <span aria-hidden="true">🛡️</span> 지식의 성 — 문제를 맞혀 성을 지키는 게임
+        </Link>
+      )}
       <UnitAccordion publisherId={publisherId} units={units} />
     </main>
   )
